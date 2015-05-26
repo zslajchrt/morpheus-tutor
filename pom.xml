@@ -34,7 +34,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>morpheus</groupId>
+            <groupId>org.morpheus</groupId>
             <artifactId>morpheus_2.11</artifactId>
             <version>0.7</version>
             <exclusions>
