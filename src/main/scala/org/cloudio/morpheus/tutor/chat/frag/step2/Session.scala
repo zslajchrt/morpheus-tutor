@@ -25,10 +25,9 @@ object Session {
 
   def main(args: Array[String]) {
 
-    val contactScala = new Contact with ContactPrinter
-    contactScala.printContact()
+//    val contactScala = new Contact with ContactPrinter
+//    contactScala.printContact()
 
-    // todo: use 'stock' instead of 'pool'
     val contact = singleton[Contact with ContactPrinter].!
     contact.firstName = "Pepa"
     contact.lastName = "Novák"

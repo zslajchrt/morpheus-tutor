@@ -27,6 +27,8 @@ case class ContactConfig_(firstName: String,
                           email: String,
                           nationality: Locale) extends ContactConfig
 
+// TODO: use Delegate type
+
 @fragment
 trait Contact extends ContactConfig {
   // some calculated fields could be added here, like:

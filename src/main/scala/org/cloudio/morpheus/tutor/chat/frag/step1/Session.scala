@@ -23,11 +23,13 @@ object Session {
 
   def main(args: Array[String]) {
 
-    val contactScala = new Contact {}
-    contactScala.firstName = "Pepa"
+// This is the equivalent in plain Scala
+//    val contactScala = new Contact {}
+//    contactScala.firstName = "Pepa"
 
     // Instead of 'val contact = new Contact()' we write:
-    val contact = singleton[Contact].!
+    //val contact = singleton[Contact].!
+    val contact = singleton[Contact].~
     contact.firstName = "Pepa"
     contact.lastName = "Novák"
     contact.male = true

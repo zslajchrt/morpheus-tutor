@@ -4,6 +4,8 @@ import org.morpheus._
 import org.morpheus.Morpheus._
 
 /**
+ * This is the code published in README.md.
+ *
  * Created by zslajchrt on 25/05/15.
  */
 
