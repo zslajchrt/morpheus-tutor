@@ -1,6 +1,6 @@
 # Morpheus tutorial
 
-1. Let's begin with 'anaemic' entity
+1. [Modelling simple entity](https://github.com/zslajchrt/morpheus-tutor/wiki/SimpleEntity)
 2. Adding some behavior
 3. Reusing fragments
 4. Multidimensional morphs
