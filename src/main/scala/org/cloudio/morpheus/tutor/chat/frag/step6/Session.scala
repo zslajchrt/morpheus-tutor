@@ -44,7 +44,7 @@ trait OutputControl {
 object Session {
 
   /**
-   * Explicit morpher notification via `notifyMorpher`
+   * Explicit morpher notification via `remorph`
    */
   def main1(args: Array[String]) {
 
@@ -63,7 +63,7 @@ object Session {
     morph.printContact()
 
     altNum = 3
-    morph.notifyMorpher()
+    morph.remorph()
 
     select[MemoryOutputChannel](morph) match {
       case None =>

@@ -103,8 +103,8 @@ object Session {
 
     signAppAltNum = 0
     printerAltNum = 1
-    emailService.notifyMorpher()
-    contact.notifyMorpher()
+    emailService.remorph()
+    contact.remorph()
 
     contact.printContact()
   }

@@ -58,7 +58,7 @@ object App {
     val contact3 = contactCmp.morph_~(morphStrategy)
     contact3.printContact()
     altNum = 1
-    contact3.notifyMorpher()
+    contact3.remorph()
     contact3.printContact()
 
     // Note: there is only one mutable part besides the memory channel's buffer, which is the atomic reference in

@@ -37,7 +37,7 @@ object Session {
         printerAltNum = i
         channelAltNum = j
         statusAltNum = k
-        contactCmp.~.notifyMorpher
+        contactCmp.~.remorph
         println(contactCmp.~.myAlternative)
       }
     }

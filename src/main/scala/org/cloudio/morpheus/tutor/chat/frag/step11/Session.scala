@@ -40,7 +40,7 @@ class ContactStatusAcceptor(contactStatusRef: &[Contact with (Offline or Online)
 
   def acceptVisitor[T](vis: ContactStatusVisitor[T]): T = {
     // refresh the status, it does not re-instantiate the proxy's delegate unless its composition changes
-    contactStatus.notifyMorpher()
+    contactStatus.remorph()
 
     contactStatus.delegate match {
       case c: Contact with Offline => vis.visitOfflineContact(c)
@@ -92,24 +92,24 @@ object Session {
     contactAcceptor.acceptVisitor(contactVisitor)
 
     statusAltNum = 1
-    contactCmp.~.notifyMorpher()
+    contactCmp.~.remorph()
 
     contactAcceptor.acceptVisitor(contactVisitor)
 
     statusAltNum = 0
-    contactCmp.~.notifyMorpher()
+    contactCmp.~.remorph()
 
     contactAcceptor.acceptVisitor(contactVisitor)
 
     statusAltNum = 1
-    contactCmp.~.notifyMorpher()
+    contactCmp.~.remorph()
 
     contactAcceptor.acceptVisitor(contactVisitor)
 
     // Controller
 
     val cc = contactCmp.~
-    cc.notifyMorpher()
+    cc.remorph()
 
     val controller: ContactStatusController = new ContactStatusController(contactCmp)
     controller.setStatus(false)
