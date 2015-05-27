@@ -1,7 +1,7 @@
 # Morpheus tutorial
 
 1. [Modelling simple entity](https://github.com/zslajchrt/morpheus-tutor/wiki/SimpleEntity)
-2. Adding some behavior
+2. [Adding some behavior](https://github.com/zslajchrt/morpheus-tutor/wiki/SimpleEntityWithBehavior)
 3. Reusing fragments
 4. Multidimensional morphs
 5. Morphing strategies
