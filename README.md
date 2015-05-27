@@ -2,7 +2,7 @@
 
 1. [Modelling simple entity](https://github.com/zslajchrt/morpheus-tutor/wiki/SimpleEntity)
 2. [Adding some behavior](https://github.com/zslajchrt/morpheus-tutor/wiki/SimpleEntityWithBehavior)
-3. Reusing fragments
+3. [Reusing fragment instances](https://github.com/zslajchrt/morpheus-tutor/wiki/ReusingFragment)
 4. Multidimensional morphs
 5. Morphing strategies
 6. Mutable morphs
