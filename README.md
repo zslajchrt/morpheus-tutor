@@ -2,13 +2,15 @@
 
 1. [Modelling simple entity](https://github.com/zslajchrt/morpheus-tutor/wiki/SimpleEntity)
 2. [Adding some behavior](https://github.com/zslajchrt/morpheus-tutor/wiki/SimpleEntityWithBehavior)
-3. [Reusing fragment instances](https://github.com/zslajchrt/morpheus-tutor/wiki/ReusingFragment)
-4. Multidimensional morphs
-5. Morphing strategies
-6. Mutable morphs
-7. Delegation and sharing
-8. Dimension wrappers
-9. Fragment wrappers
-10. Using a morph in another morph
-11. Kernel references
-12. Rating alternatives
+3. [Abstracting fragment](https://github.com/zslajchrt/morpheus-tutor/wiki/AbstractingFragment)
+4. [Reusing fragment](https://github.com/zslajchrt/morpheus-tutor/wiki/ReusingFragment)
+5. [Using fragment in Java](https://github.com/zslajchrt/morpheus-tutor/wiki/MorphsInJava)
+6. Multidimensional morphs
+7. Morphing strategies
+8. Mutable morphs
+9. Delegation and sharing
+10. Dimension wrappers
+11. Fragment wrappers
+12. Using a morph in another morph
+13. Kernel references
+14. Rating alternatives
