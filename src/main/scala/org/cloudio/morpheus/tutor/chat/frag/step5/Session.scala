@@ -7,6 +7,23 @@ import Morpheus._
 import org.cloudio.morpheus.tutor.chat.frag.step1.Contact
 import org.cloudio.morpheus.tutor.chat.frag.step4.{MemoryOutputChannel, StandardOutputChannel, ContactPrettyPrinter, ContactRawPrinter}
 
+@dimension
+trait Color {
+
+}
+
+@fragment
+trait Red extends Color {
+}
+
+@fragment
+trait Yellow extends Color {
+}
+
+@fragment
+trait Green extends Color {
+}
+
 /**
  * Introducing morpher strategies and immutable morphs.
  *
@@ -15,29 +32,45 @@ import org.cloudio.morpheus.tutor.chat.frag.step4.{MemoryOutputChannel, Standard
 object Session {
 
   def main1(args: Array[String]) {
+    val tlModel = parse[Red or Yellow or Green](true)
 
-    val contactCmp = singleton[Contact
-      with (ContactRawPrinter or ContactPrettyPrinter)
-      with (StandardOutputChannel or MemoryOutputChannel)]
+    var lightSel = Set((0, 1), (1, 0), (2, 0))
+    val tlStrategy = rate[Red or Yellow or Green](lightSel)
+    val tlComp = compose(tlModel, tlStrategy)
 
-    val contact = contactCmp.!
+    var tl = tlComp.!
 
-    contact.firstName = "Pepa"
-    contact.lastName = "Novák"
-    contact.male = true
-    contact.nationality = Locale.CANADA
 
-    var altNum: Int = 0
-    val morphStrategy = promote[contactCmp.Model](altNum)
-    println(s"There is ${morphStrategy.altsCount} alternatives")
+    lightSel = Set((0, 0), (1, 1), (2, 0))
+    tl = tl.remorph
 
-    val morph1 = contactCmp.morph(morphStrategy)
-    morph1.printContact()
-
-    altNum = 1
-    val morph2 = contactCmp.morph(morphStrategy)
-    morph2.printContact()
-
+//    val contactModel = parse[Contact
+//      with (ContactRawPrinter or ContactPrettyPrinter)
+//      with (StandardOutputChannel or MemoryOutputChannel)](true)
+//    var altNum: Int = 0
+//    //val morphStrategy = promote[contactModel.Model](altNum)
+//    var printerSel = Set((0, 1), (1, 0))
+//    val morphStrategy = rate[ContactRawPrinter or ContactPrettyPrinter](rootStrategy(contactModel), printerSel)
+//
+//    val contactKernel = singleton(contactModel, morphStrategy)
+//
+//    var contact = contactKernel.!
+//
+//    contact.firstName = "Pepa"
+//    contact.lastName = "Novák"
+//    contact.male = true
+//    contact.nationality = Locale.CANADA
+//
+//    println(s"There is ${morphStrategy.altsCount} alternatives")
+//
+//    //contact.remorph(morphStrategy)
+//    contact = contact.remorph
+//    contact.printContact()
+//
+//    altNum = 1
+//    contact = contact.remorph
+//    contact.printContact()
+//
   }
 
   /**
@@ -53,10 +86,10 @@ object Session {
     contact.male = true
     contact.nationality = Locale.CANADA
 
-    var printerAltNum: Int = 0
-    var channelAltNum: Int = 0
-    val morphStrategy1 = promote[ContactRawPrinter or ContactPrettyPrinter](RootStrategy[contactCmp.Model](), printerAltNum)
-    val morphStrategy2 = promote[StandardOutputChannel or MemoryOutputChannel](morphStrategy1, channelAltNum)
+    var printerCoord: Int = 0
+    var channelCoord: Int = 0
+    val morphStrategy1 = promote[ContactRawPrinter or ContactPrettyPrinter](RootStrategy[contactCmp.Model](), printerCoord)
+    val morphStrategy2 = promote[StandardOutputChannel or MemoryOutputChannel](morphStrategy1, channelCoord)
 
     def morphContact(): Unit = {
       val morph = contactCmp.morph(morphStrategy2)
@@ -65,16 +98,16 @@ object Session {
     }
 
     for (i <- 0 to 1; j <- 0 to 1) {
-      printerAltNum = i
-      channelAltNum = j
+      printerCoord = i
+      channelCoord = j
       morphContact()
     }
 
     // The strategy calculates the the alt index as the modulo of i and altsCount
-    channelAltNum = 1
+    channelCoord = 1
     for (i <- 0 to 100) {
-      printerAltNum = i / 2
-      channelAltNum = i % 2
+      printerCoord = i / 2
+      channelCoord = i % 2
       morphContact()
     }
 

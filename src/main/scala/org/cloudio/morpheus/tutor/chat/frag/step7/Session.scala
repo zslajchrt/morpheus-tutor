@@ -80,7 +80,8 @@ object App {
     val contactCfg = ContactConfig_("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA)
     val contactCmp1 = *(contactRef, single[Contact, ContactConfig](contactCfg))
 
-    val contactFrag2 = single[Contact, ContactConfig](contactCfg.copy(nationality = Locale.CHINA))
+    val chinaConfig = contactCfg.copy(nationality = Locale.CHINA)
+    val contactFrag2 = single[Contact, ContactConfig](chinaConfig)
     val contactCmp2 = *(contactRef, contactFrag2)
     contactCmp1.!.printContact()
     contactCmp2.!.printContact()

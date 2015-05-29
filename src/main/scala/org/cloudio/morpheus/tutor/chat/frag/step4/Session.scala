@@ -2,6 +2,7 @@ package org.cloudio.morpheus.tutor.chat.frag.step4
 
 import java.util.Locale
 
+import org.cloudio.morpheus.tutor.chat.frag.step3.ContactSerializer
 import org.morpheus._
 import Morpheus._
 import org.cloudio.morpheus.tutor.chat.frag.step1.Contact
@@ -72,13 +73,13 @@ object Session {
 
   def main1(args: Array[String]) {
 
-    val (prettyPrint, memoryOutput) = (args.contains("prettyPrint"), args.contains("memoryOutput"))
+    val (style, channel) = (System.getProperty("style", "raw"), System.getProperty("channel", "standard"))
 
-    val contact = (prettyPrint, memoryOutput) match {
-      case (true, true) => singleton[Contact with ContactPrettyPrinter with MemoryOutputChannel].!
-      case (false, true) => singleton[Contact with ContactRawPrinter with MemoryOutputChannel].!
-      case (true, false) => singleton[Contact with ContactPrettyPrinter with StandardOutputChannel].!
-      case (false, false) => singleton[Contact with ContactRawPrinter with StandardOutputChannel].!
+    val contact = (style, channel) match {
+      case ("pretty", "memory") => singleton[Contact with ContactPrettyPrinter with MemoryOutputChannel].!
+      case ("raw", "memory") => singleton[Contact with ContactRawPrinter with MemoryOutputChannel].!
+      case ("pretty", "standard") => singleton[Contact with ContactPrettyPrinter with StandardOutputChannel].!
+      case ("raw", "standard") => singleton[Contact with ContactRawPrinter with StandardOutputChannel].!
     }
 
     contact.firstName = "Pepa"
@@ -92,11 +93,11 @@ object Session {
 
   def main(args: Array[String]) {
 
-    val contactCmp = singleton[Contact
+    val contactKernel = singleton[Contact
       with (ContactRawPrinter or ContactPrettyPrinter)
       with (StandardOutputChannel or MemoryOutputChannel)]
 
-    val contact = contactCmp.!
+    val contact = contactKernel.!
 
     contact.firstName = "Pepa"
     contact.lastName = "Novák"
@@ -106,13 +107,20 @@ object Session {
     contact.printContact()
     println(contact.myAlternative)
 
-    val printer1 = asCompositeOf[ContactRawPrinter with StandardOutputChannel](contactCmp)
-    printer1.printContact()
+    //asMorphOf[ContactRawPrinter with ContactSerializer](contact) // it won't compile
+    val standardRawPrinter = asMorphOf[ContactRawPrinter with StandardOutputChannel](contact)
+    standardRawPrinter.printContact()
+    println(standardRawPrinter.myAlternative)
 
-    val printer2 = asCompositeOf[ContactPrettyPrinter with MemoryOutputChannel](contactCmp)
-    printer2.printContact()
+    val memoryPrettyPrinter = asMorphOf[ContactPrettyPrinter with MemoryOutputChannel](contact)
+    memoryPrettyPrinter.printContact()
+    println(memoryPrettyPrinter.myAlternative)
 
-    select[MemoryOutputChannel](printer2) match {
+    //select[ContactSerializer](contact) // it won't compile
+    //select[ContactRawPrinter](memoryPrettyPrinter) // it won't compile
+    select[Contact with ContactPrettyPrinter](memoryPrettyPrinter) // it should compile despite Contact is not explicitly mentioned in the morph type, however, it is a dependency of ContactPrettyPrinter
+
+    select[MemoryOutputChannel](memoryPrettyPrinter) match {
       case None =>
       case Some(memChannel) =>
         println(memChannel.outputBuffer)
