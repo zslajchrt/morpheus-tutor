@@ -7,79 +7,57 @@ import Morpheus._
 import org.cloudio.morpheus.tutor.chat.frag.step1.Contact
 import org.cloudio.morpheus.tutor.chat.frag.step4.{MemoryOutputChannel, StandardOutputChannel, ContactPrettyPrinter, ContactRawPrinter}
 
-@dimension
-trait Color {
-
-}
-
-@fragment
-trait Red extends Color {
-}
-
-@fragment
-trait Yellow extends Color {
-}
-
-@fragment
-trait Green extends Color {
-}
-
 /**
- * Introducing morpher strategies and immutable morphs.
+ * Introducing morphing strategies and immutable morphs.
  *
  * Created by zslajchrt on 04/05/15.
  */
 object Session {
 
-  def main1(args: Array[String]) {
-    val tlModel = parse[Red or Yellow or Green](true)
+  def main(args: Array[String]) {
+    val contactKernel = singleton[Contact
+      with (ContactRawPrinter or ContactPrettyPrinter)
+      with (StandardOutputChannel or MemoryOutputChannel)]
 
-    var lightSel = Set((0, 1), (1, 0), (2, 0))
-    val tlStrategy = rate[Red or Yellow or Green](lightSel)
-    val tlComp = compose(tlModel, tlStrategy)
+    var contact = contactKernel.!
 
-    var tl = tlComp.!
+    contact.firstName = "Pepa"
+    contact.lastName = "Novák"
+    contact.male = true
+    contact.nationality = Locale.CANADA
 
+    var altNum: Int = 0
+    val morphStrategy = promote[contactKernel.Model](altNum)
 
-    lightSel = Set((0, 0), (1, 1), (2, 0))
-    tl = tl.remorph
+    println(s"There is ${morphStrategy.altsCount} alternatives")
 
-//    val contactModel = parse[Contact
-//      with (ContactRawPrinter or ContactPrettyPrinter)
-//      with (StandardOutputChannel or MemoryOutputChannel)](true)
-//    var altNum: Int = 0
-//    //val morphStrategy = promote[contactModel.Model](altNum)
-//    var printerSel = Set((0, 1), (1, 0))
-//    val morphStrategy = rate[ContactRawPrinter or ContactPrettyPrinter](rootStrategy(contactModel), printerSel)
-//
-//    val contactKernel = singleton(contactModel, morphStrategy)
-//
-//    var contact = contactKernel.!
-//
-//    contact.firstName = "Pepa"
-//    contact.lastName = "Novák"
-//    contact.male = true
-//    contact.nationality = Locale.CANADA
-//
-//    println(s"There is ${morphStrategy.altsCount} alternatives")
-//
-//    //contact.remorph(morphStrategy)
-//    contact = contact.remorph
-//    contact.printContact()
-//
-//    altNum = 1
-//    contact = contact.remorph
-//    contact.printContact()
-//
+    contact = contact.remorph(morphStrategy)
+    println(contact.myAlternative)
+    //contact.printContact()
+
+    altNum = 1
+    contact = contact.remorph
+    println(contact.myAlternative)
+    //contact.printContact()
+
+    altNum = 2
+    contact = contact.remorph
+    println(contact.myAlternative)
+    //contact.printContact()
+
+    altNum = 3
+    contact = contact.remorph
+    println(contact.myAlternative)
+    //contact.printContact()
   }
 
   /**
-   * The switch strategy using a submodel of the composite model.
+   * The switch strategy using a submodel of the morph model.
    */
-  def main(args: Array[String]) {
+  def main2(args: Array[String]) {
 
-    val contactCmp = singleton[Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel)]
-    val contact = contactCmp.!
+    val contactKernel = singleton[Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel)]
+    val contact = contactKernel.!
 
     contact.firstName = "Pepa"
     contact.lastName = "Novák"
@@ -88,11 +66,11 @@ object Session {
 
     var printerCoord: Int = 0
     var channelCoord: Int = 0
-    val morphStrategy1 = promote[ContactRawPrinter or ContactPrettyPrinter](RootStrategy[contactCmp.Model](), printerCoord)
+    val morphStrategy1 = promote[ContactRawPrinter or ContactPrettyPrinter](RootStrategy[contactKernel.Model](), printerCoord)
     val morphStrategy2 = promote[StandardOutputChannel or MemoryOutputChannel](morphStrategy1, channelCoord)
 
     def morphContact(): Unit = {
-      val morph = contactCmp.morph(morphStrategy2)
+      val morph = contactKernel.morph(morphStrategy2)
       println(morph.myAlternative)
       morph.printContact()
     }
