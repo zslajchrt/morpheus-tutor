@@ -27,7 +27,7 @@ class DefaultContact(nm: String, ad: String) extends Contact {
   override def sendMessage(msg: String): Unit = ???
 }
 
-@fragment trait OfflineContact extends Delegate[Contact] {
+@fragment trait OfflineContact extends dlg[Contact] {
   private var email: String = null
   override def address: String = email
   override def address_=(em: String): Unit = {
@@ -41,7 +41,7 @@ class DefaultContact(nm: String, ad: String) extends Contact {
 }
 
 
-@fragment trait OnlineContact extends Delegate[Contact] {
+@fragment trait OnlineContact extends dlg[Contact] {
   override def sendMessage(msg: String) {
     // todo
     println(s"Sending message to $name <$address> by chat")
@@ -51,6 +51,7 @@ class DefaultContact(nm: String, ad: String) extends Contact {
 object Session {
 
   def main(args: Array[String]) {
+
 
     type ContactMorphType = OfflineContact or OnlineContact
     val sharedContact = new DefaultContact("Josef", "chat:pepa")

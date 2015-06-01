@@ -4,7 +4,7 @@ import java.util.Locale
 
 import org.morpheus._
 import Morpheus._
-import org.cloudio.morpheus.tutor.chat.frag.step7._
+import org.cloudio.morpheus.tutor.chat.frag.step8._
 
 /**
  * Fragment wrappers
@@ -35,8 +35,8 @@ object Session {
 
   def main(args: Array[String]) {
 
-    val contactCfg = ContactConfig_("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA)
-    implicit val contactFrag = single[Contact, ContactConfig](contactCfg)
+    val contactCfg = ContactConfig("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA)
+    implicit val contactFrag = single[Contact, ContactData](contactCfg)
     implicit val bufWDFrag = single[BufferWatchDog, BufferWatchDogConfig](BufferWatchDogConfig_(100))
     val contactCmp = singleton[Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or (MemoryOutputChannel with \?[BufferWatchDog]))]
 

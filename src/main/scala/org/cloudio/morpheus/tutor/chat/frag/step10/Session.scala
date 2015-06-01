@@ -4,13 +4,15 @@ import java.util.Locale
 
 import org.morpheus._
 import Morpheus._
-import org.cloudio.morpheus.tutor.chat.frag.step7._
+
+import org.cloudio.morpheus.tutor.chat.frag.step8._
 
 /**
  * Using a composite in another composite
  *
  * Created by zslajchrt on 05/05/15.
  */
+
 
 @dimension
 trait EmailService {
@@ -66,7 +68,7 @@ object Session {
     val emailServiceCmp = singleton[DummyEmailService with EmailVerifier]
     val emailService = emailServiceCmp.!
 
-    implicit val contactFrg = single[Contact, ContactConfig](ContactConfig_("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA))
+    implicit val contactFrg = single[Contact, ContactData](ContactConfig("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA))
     implicit val emailChannelFrg = single[EmailChannel, EmailChannelConfig](EmailChannelConfig_("Contact"))
     implicit val emailServiceFrg = external[EmailService](emailService)
     val contactCmp = singleton[Contact with ContactPrettyPrinter with EmailService with EmailChannel]
@@ -91,7 +93,7 @@ object Session {
     val emailStrategy = promote[\?[EmailSignatureAppender]](RootStrategy[emailServiceCmp.Model](), signAppAltNum)
     val emailService = emailServiceCmp.morph_~(emailStrategy)
 
-    implicit val contactFrg = single[Contact, ContactConfig](ContactConfig_("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA))
+    implicit val contactFrg = single[Contact, ContactData](ContactConfig("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA))
     implicit val emailChannelFrg = single[EmailChannel, EmailChannelConfig](EmailChannelConfig_("Contact"))
     implicit val emailServiceFrg = external[EmailService](emailService)
     val contactCmp = singleton[Contact with (ContactRawPrinter or ContactPrettyPrinter) with EmailService with EmailChannel]
@@ -131,7 +133,7 @@ object Session {
     val emailService = emailServiceCmp.morph_~(emailStrategy)
     emailService.startListening(remorphEmailServiceEv.nameSelector)
 
-    implicit val contactFrg = single[Contact, ContactConfig](ContactConfig_("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA))
+    implicit val contactFrg = single[Contact, ContactData](ContactConfig("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA))
     implicit val emailChannelFrg = single[EmailChannel, EmailChannelConfig](EmailChannelConfig_("Contact"))
     implicit val emailServiceFrg = external[EmailService](emailService)
     val contactCmp = singleton[Contact with (ContactRawPrinter or ContactPrettyPrinter) with EmailService with EmailChannel with MutableFragment]
@@ -154,3 +156,4 @@ object Session {
   }
 
 }
+

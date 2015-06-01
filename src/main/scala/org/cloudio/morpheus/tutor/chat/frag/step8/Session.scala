@@ -12,6 +12,27 @@ import org.cloudio.morpheus.tutor.chat.frag.step7._
  * Created by zslajchrt on 05/05/15.
  */
 
+trait ContactData {
+  val firstName: String
+  val lastName: String
+  val male: Boolean
+  val email: String
+  val nationality: Locale
+}
+
+case class ContactConfig(firstName: String,
+                         lastName: String,
+                         male: Boolean,
+                         email: String,
+                         nationality: Locale) extends ContactData
+
+@fragment
+trait Contact extends dlg[ContactData] {
+  // some calculated fields could be added here, like:
+  lazy val female = !male
+}
+
+
 @dimension @wrapper
 trait ChannelMonitor extends OutputChannel {
 
@@ -35,8 +56,8 @@ object Session {
 
   def main(args: Array[String]) {
 
-    val contactCfg = ContactConfig_("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA)
-    implicit val contactFrag = single[Contact, ContactConfig](contactCfg)
+    val contactCfg = ContactConfig("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA)
+    implicit val contactFrag = single[Contact, ContactData](contactCfg)
     val contactCmp = singleton[Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel) with \?[ChannelMonitor] with \?[NewLineAppender]]
 
     var printerAltNum: Int = 0
@@ -58,3 +79,52 @@ object Session {
   }
 
 }
+
+@dimension
+trait OutputChannel {
+  def printText(text: String): Unit
+}
+
+@fragment
+trait StandardOutputChannel extends OutputChannel {
+  override def printText(text: String): Unit = print(text)
+}
+
+@fragment
+trait MemoryOutputChannel extends OutputChannel {
+
+  val outputBuffer = new StringBuilder()
+
+  override def printText(text: String): Unit = outputBuffer.append(text)
+
+}
+
+@dimension
+trait ContactPrinter {
+  def printContact(): Unit
+}
+
+@fragment
+trait ContactRawPrinter extends ContactPrinter {
+  this: Contact with OutputChannel =>
+
+  def printContact(): Unit = {
+    printText(s"$firstName $lastName $nationality $male")
+  }
+}
+
+@fragment
+trait ContactPrettyPrinter extends ContactPrinter {
+  this: Contact with OutputChannel =>
+
+  def printContact(): Unit = {
+    printText(
+      s"""
+         First Name: $firstName
+         Second Name: $lastName
+         Male: $male
+         Nationality: $nationality
+      """)
+  }
+}
+

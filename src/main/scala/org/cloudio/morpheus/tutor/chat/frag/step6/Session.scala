@@ -46,10 +46,10 @@ object Session {
   /**
    * Explicit morpher notification via `remorph`
    */
-  def main1(args: Array[String]) {
+  def main(args: Array[String]) {
 
-    val contactCmp = singleton[Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel)]
-    val contact = contactCmp.!
+    val contactKernel = singleton[Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel)]
+    val contact = contactKernel.~
 
     contact.firstName = "Pepa"
     contact.lastName = "Novák"
@@ -57,19 +57,19 @@ object Session {
     contact.nationality = Locale.CANADA
 
     var altNum: Int = 0
-    val morphStrategy = promote[contactCmp.Model](altNum)
+    val morphStrategy = promote[contactKernel.Model](altNum)
+    contact.remorph(morphStrategy)
 
-    val morph = contactCmp.morph_~(morphStrategy)
-    morph.printContact()
+    contact.printContact()
 
     altNum = 3
-    morph.remorph()
+    contact.remorph()
 
-    select[MemoryOutputChannel](morph) match {
+    select[MemoryOutputChannel](contact) match {
       case None =>
-        morph.printContact()
+        contact.printContact()
       case Some(memChannel) =>
-        morph.printContact()
+        contact.printContact()
         println(memChannel.outputBuffer)
     }
   }
@@ -80,8 +80,8 @@ object Session {
   def main2(args: Array[String]) {
 
     implicit val mutFrag = mutableFragment()
-    val contactCmp = singleton[MutableFragment with Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel)]
-    val contact = contactCmp.!
+    val contactKernel = singleton[MutableFragment with Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel)]
+    val contact = contactKernel.!
 
     contact.firstName = "Pepa"
     contact.lastName = "Novák"
@@ -89,9 +89,9 @@ object Session {
     contact.nationality = Locale.CANADA
 
     var altNum: Int = 0
-    val morphStrategy = promote[contactCmp.Model](altNum)
+    val morphStrategy = promote[contactKernel.Model](altNum)
 
-    val morph = contactCmp.morph_~(morphStrategy)
+    val morph = contactKernel.morph_~(morphStrategy)
     morph.startListening()
 
     morph.fire("notify", null, null)
@@ -112,17 +112,17 @@ object Session {
     val monitor = EventMonitor[Int]("altNum", followUpEvent)
 
     implicit val mutFrag = mutableFragment(monitor)
-    val contactCmp = singleton[MutableFragment with Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel)]
-    val contact = contactCmp.!
+    val contactKernel = singleton[MutableFragment with Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel)]
+    val contact = contactKernel.!
 
     contact.firstName = "Pepa"
     contact.lastName = "Novák"
     contact.male = true
     contact.nationality = Locale.CANADA
 
-    val morphStrategy = promote[contactCmp.Model](monitor.status())
+    val morphStrategy = promote[contactKernel.Model](monitor.status())
 
-    val morph = contactCmp.morph_~(morphStrategy)
+    val morph = contactKernel.morph_~(morphStrategy)
     morph.startListening(followUpEvent.nameSelector)
 
     val setAltEvent = monitor.makeEvent(0)
@@ -138,11 +138,11 @@ object Session {
   /**
    * Indirect morpher notification through a fragment member
    */
-  def main(args: Array[String]): Unit = {
+  def main4(args: Array[String]): Unit = {
 
 
-    val contactCmp = singleton[PrinterControl with OutputControl with Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel)]
-    val contact = contactCmp.~
+    val contactKernel = singleton[PrinterControl with OutputControl with Contact with (ContactRawPrinter or ContactPrettyPrinter) with (StandardOutputChannel or MemoryOutputChannel)]
+    val contact = contactKernel.~
 
     contact.firstName = "Pepa"
     contact.lastName = "Novák"

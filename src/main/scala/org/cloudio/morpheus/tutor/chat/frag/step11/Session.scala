@@ -4,7 +4,7 @@ import java.util.Locale
 
 import org.morpheus._
 import Morpheus._
-import org.cloudio.morpheus.tutor.chat.frag.step7._
+import org.cloudio.morpheus.tutor.chat.frag.step8._
 
 /**
  * References
@@ -63,7 +63,7 @@ object Session {
 
   def main(args: Array[String]) {
 
-    implicit val contactFrg = single[Contact, ContactConfig](ContactConfig_("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA))
+    implicit val contactFrg = single[Contact, ContactData](ContactConfig("Pepa", "Novák", male = true, email = "pepa@gmail.com", Locale.CANADA))
     val contactModel = parse[Contact with
       (ContactRawPrinter or ContactPrettyPrinter) with
       (StandardOutputChannel or MemoryOutputChannel) with
