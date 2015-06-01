@@ -8,7 +8,7 @@
 6. [Multidimensional morphs](https://github.com/zslajchrt/morpheus-tutor/wiki/MultipleDimensions)
 7. [Morphing strategies](https://github.com/zslajchrt/morpheus-tutor/wiki/MorphingStrategies)
 8. [Mutable morphs](https://github.com/zslajchrt/morpheus-tutor/wiki/MutableMorphs)
-9. Delegation and sharing
+9. [Delegation and sharing](https://github.com/zslajchrt/morpheus-tutor/wiki/DelegatingAndSharing)
 10. Dimension wrappers
 11. Fragment wrappers
 12. Using a morph in another morph
