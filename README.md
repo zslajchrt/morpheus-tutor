@@ -7,7 +7,7 @@
 5. [Using fragment in Java](https://github.com/zslajchrt/morpheus-tutor/wiki/MorphsInJava)
 6. [Multidimensional morphs](https://github.com/zslajchrt/morpheus-tutor/wiki/MultipleDimensions)
 7. [Morphing strategies](https://github.com/zslajchrt/morpheus-tutor/wiki/MorphingStrategies)
-8. Mutable morphs
+8. [Mutable morphs](https://github.com/zslajchrt/morpheus-tutor/wiki/MutableMorphs)
 9. Delegation and sharing
 10. Dimension wrappers
 11. Fragment wrappers
