@@ -4,13 +4,33 @@ import java.util.Locale
 
 import org.morpheus._
 import Morpheus._
-import org.cloudio.morpheus.tutor.chat.frag.step8._
 
 /**
  * Fragment wrappers
  *
  * Created by zslajchrt on 05/05/15.
  */
+
+trait ContactData {
+  val firstName: String
+  val lastName: String
+  val email: String
+  val male: Boolean
+  val nationality: Locale
+}
+
+case class ContactConfig(firstName: String,
+                         lastName: String,
+                         male: Boolean,
+                         email: String,
+                         nationality: Locale) extends ContactData
+
+@fragment
+trait Contact extends dlg[ContactData] {
+  // some calculated fields could be added here, like:
+  lazy val female = !male
+}
+
 
 trait BufferWatchDogConfig {
   val bufferWatchDogLimit: Int
@@ -57,3 +77,52 @@ object Session {
   }
 
 }
+
+@dimension
+trait OutputChannel {
+  def printText(text: String): Unit
+}
+
+@fragment
+trait StandardOutputChannel extends OutputChannel {
+  override def printText(text: String): Unit = print(text)
+}
+
+@fragment
+trait MemoryOutputChannel extends OutputChannel {
+
+  val outputBuffer = new StringBuilder()
+
+  override def printText(text: String): Unit = outputBuffer.append(text)
+
+}
+
+@dimension
+trait ContactPrinter {
+  def printContact(): Unit
+}
+
+@fragment
+trait ContactRawPrinter extends ContactPrinter {
+  this: Contact with OutputChannel =>
+
+  def printContact(): Unit = {
+    printText(s"$firstName $lastName $nationality $male")
+  }
+}
+
+@fragment
+trait ContactPrettyPrinter extends ContactPrinter {
+  this: Contact with OutputChannel =>
+
+  def printContact(): Unit = {
+    printText(
+      s"""
+         First Name: $firstName
+         Second Name: $lastName
+         Male: $male
+         Nationality: $nationality
+      """)
+  }
+}
+

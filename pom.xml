@@ -104,7 +104,7 @@
                             <!--<version>2.1.0-M5</version>-->
                         <!--</compilerPlugin>-->
                         <compilerPlugin>
-                            <groupId>morpheus</groupId>
+                            <groupId>org.morpheus</groupId>
                             <artifactId>morpheus_2.11</artifactId>
                             <version>0.7</version>
                         </compilerPlugin>

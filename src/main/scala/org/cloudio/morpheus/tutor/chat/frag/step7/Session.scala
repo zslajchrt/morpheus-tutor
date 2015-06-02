@@ -6,10 +6,10 @@ import org.morpheus._
 import Morpheus._
 
 /**
- * Making the Contact entity immutable.
- *
- * Created by zslajchrt on 04/05/15.
- */
+* Making the Contact entity immutable.
+*
+* Created by zslajchrt on 04/05/15.
+*/
 object Session {
 }
 
@@ -18,12 +18,14 @@ trait Contact {
   val firstName: String
   val lastName: String
   val male: Boolean
+  val email: String
   val nationality: Locale
 }
 
 case class ContactData(firstName: String,
                         lastName: String,
                         male: Boolean,
+                        email: String,
                         nationality: Locale) extends Contact
 
 @fragment
@@ -38,7 +40,7 @@ object App {
 
   def main(args: Array[String]) {
 
-    val contactData = ContactData("Pepa", "Novák", male = true, Locale.CANADA)
+    val contactData = ContactData("Pepa", "Novák", male = true, email="pepa@depo.cz", Locale.CANADA)
 
     implicit val offlineContactFrag = single[OfflineContact, Contact](contactData)
     implicit val onlineContactFrag = single[OnlineContact, Contact](contactData)

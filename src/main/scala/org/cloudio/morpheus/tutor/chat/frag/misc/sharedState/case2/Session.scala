@@ -4,12 +4,12 @@ import org.morpheus._
 import org.morpheus.Morpheus._
 
 /**
- * A demonstration of sharing state between fragments.
- *
- * In this case we separate the common state to a new fragment.
- *
- * Created by zslajchrt on 26/05/15.
- */
+* A demonstration of sharing state between fragments.
+*
+* In this case we separate the common state to a new fragment.
+*
+* Created by zslajchrt on 26/05/15.
+*/
 
 @fragment trait Contact {
   var name: String = null
