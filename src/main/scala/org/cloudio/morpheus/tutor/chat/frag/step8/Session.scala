@@ -51,21 +51,21 @@ object Session {
       \?[NewLineAppender] with
       \?[ChannelMonitor]]
 
-    var contactAltNum: Int = 1
+    var contactCoord: Int = 1
     val contactStr = promote[OfflineContact or OnlineContact](
-      RootStrategy[contactKernel.Model](), contactAltNum)
+      RootStrategy[contactKernel.Model](), contactCoord)
 
-    var printerAltNum: Int = 1
+    var printerCoord: Int = 1
     val printerStr = promote[ContactRawPrinter or ContactPrettyPrinter](
-      contactStr, printerAltNum)
+      contactStr, printerCoord)
 
-    var channelAltNum: Int = 0
+    var channelCoord: Int = 0
     val channelStr = promote[StandardOutputChannel or MemoryOutputChannel](
-      printerStr, channelAltNum)
+      printerStr, channelCoord)
 
-    var channelWrappersAltNum: Int = 3
+    var channelWrappersCoord: Int = 3
     val wrappersStr = promote[\?[ChannelMonitor] with \?[NewLineAppender]](
-      channelStr, channelWrappersAltNum)
+      channelStr, channelWrappersCoord)
 
     var contact = contactKernel.!
     contact = contact.remorph(wrappersStr)
