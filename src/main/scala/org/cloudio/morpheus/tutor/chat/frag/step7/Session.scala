@@ -30,6 +30,7 @@ case class ContactData(firstName: String,
 
 @fragment
 trait OfflineContact extends dlg[Contact] {
+  def tryOnline(): Boolean = false // todo
 }
 
 @fragment
