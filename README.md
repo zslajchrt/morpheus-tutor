@@ -11,6 +11,6 @@
 9. [Delegating and sharing](https://github.com/zslajchrt/morpheus-tutor/wiki/DelegatingAndSharing)
 10. [Dimension wrappers](https://github.com/zslajchrt/morpheus-tutor/wiki/DimensionWrappers)
 11. [Fragment wrappers](https://github.com/zslajchrt/morpheus-tutor/wiki/FragmentWrappers)
-12. Using a morph in another morph
+12. Using a morph as a fragment(https://github.com/zslajchrt/morpheus-tutor/wiki/UsingMorphAsFragment)
 13. Kernel references
 14. Rating alternatives
