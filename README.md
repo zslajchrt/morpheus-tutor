@@ -12,5 +12,5 @@
 10. [Dimension wrappers](https://github.com/zslajchrt/morpheus-tutor/wiki/DimensionWrappers)
 11. [Fragment wrappers](https://github.com/zslajchrt/morpheus-tutor/wiki/FragmentWrappers)
 12. [Using a morph as a fragment](https://github.com/zslajchrt/morpheus-tutor/wiki/UsingMorphAsFragment)
-13. Kernel references
+13. [Kernel references](https://github.com/zslajchrt/morpheus-tutor/wiki/KernelReferences)
 14. Rating alternatives
