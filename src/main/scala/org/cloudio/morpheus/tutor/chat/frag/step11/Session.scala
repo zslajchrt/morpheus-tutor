@@ -13,21 +13,6 @@ import org.cloudio.morpheus.tutor.chat.frag.step7._
 */
 
 
-//@dimension
-//trait ContactStatus {
-//
-//}
-//
-//@fragment
-//trait Online extends ContactStatus {
-//
-//}
-//
-//@fragment
-//trait Offline extends ContactStatus {
-//
-//}
-
 object ContactKernelFactory {
 
   var printerCoord: Int = 0
@@ -122,23 +107,29 @@ object Session {
     useKernel(kernel)
 
     val kernelRef1: &[Contact] = kernel
-    val subKernel1 = *(kernelRef1)
-    println(subKernel1.~.myAlternative.mkString("\n"))
-    println(subKernel1.~.email)
+    val subKernel1: MorphKernel[Contact] {
+      type LUB = Contact
+      type ConformLevel = TotalConformance } = *(kernelRef1)
+
+    val contact: Contact with MutableMorphMirror[Contact] = subKernel1.~
+    //val contact = subKernel.~
+    println(contact.myAlternative.mkString("\n"))
+    println(contact.email)
 
     val kernelRef2: &[OfflineContact] = kernel
-    val subKernel2 = *(kernelRef2)
+    val subKernel2: MorphKernel[OfflineContact] { type LUB = OfflineContact } = *(kernelRef2)
     subKernel2.~.tryOnline()
 
     val kernelRef3: &[(OfflineContact or OnlineContact) with ContactPrinter] = kernel
-    val subKernel3 = *(kernelRef3)
+    val subKernel3: MorphKernel[(OfflineContact or OnlineContact) with ContactPrinter] { type LUB = Contact with ContactPrinter } = *(kernelRef3)
     var contactCoord: Int = 1
     val contactDimStr = promote[(OfflineContact or OnlineContact) with ContactPrinter](subKernel3.defaultStrategy, contactCoord)
-    var contact = subKernel3.!.remorph(contactDimStr)
-    contact.printContact
+    var contact3 = subKernel3.!.remorph(contactDimStr)
+    println(contact3.myAlternative.mkString("\n"))
+    contact3.printContact
 
     val kernelRef4: &[(OfflineContact or OnlineContact) with ContactPrinter with $[FunnyOutputChannel]] = kernel
-    val subKernel4 = *(kernelRef4, single[FunnyOutputChannel])
+    val subKernel4: MorphKernel[(OfflineContact or OnlineContact) with ContactPrinter with FunnyOutputChannel] { type LUB = Contact with ContactPrinter with FunnyOutputChannel } = *(kernelRef4, single[FunnyOutputChannel])
     println(subKernel4.~.myAlternative.mkString("\n"))
     println(subKernel4.~.printContact)
 
