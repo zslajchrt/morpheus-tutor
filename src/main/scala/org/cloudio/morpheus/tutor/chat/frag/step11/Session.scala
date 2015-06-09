@@ -73,12 +73,22 @@ class ContactStatusController(contactStatusRef: &[OfflineContact or OnlineContac
 
 }
 
+class funny(val message: String = "") extends scala.annotation.StaticAnnotation
 
 @dimension @wrapper
-trait FunnyOutputChannel extends OutputChannel {
+trait RevertingOutputChannel extends OutputChannel {
 
   abstract override def printText(text: String): Unit = {
     super.printText(text.reverse)
+  }
+
+}
+
+@fragment @funny("haha")
+trait FunnyOutputChannel extends OutputChannel {
+
+  override def printText(text: String): Unit = {
+    println(s"$text:-)")
   }
 
 }
@@ -128,8 +138,8 @@ object Session {
     println(contact3.myAlternative.mkString("\n"))
     contact3.printContact
 
-    val kernelRef4: &[(OfflineContact or OnlineContact) with ContactPrinter with $[FunnyOutputChannel]] = kernel
-    val subKernel4: MorphKernel[(OfflineContact or OnlineContact) with ContactPrinter with FunnyOutputChannel] { type LUB = Contact with ContactPrinter with FunnyOutputChannel } = *(kernelRef4, single[FunnyOutputChannel])
+    val kernelRef4: &[(OfflineContact or OnlineContact) with ContactPrinter with $[RevertingOutputChannel]] = kernel
+    val subKernel4: MorphKernel[(OfflineContact or OnlineContact) with ContactPrinter with RevertingOutputChannel] { type LUB = Contact with ContactPrinter with RevertingOutputChannel } = *(kernelRef4, single[RevertingOutputChannel])
     println(subKernel4.~.myAlternative.mkString("\n"))
     println(subKernel4.~.printContact)
 
@@ -145,6 +155,34 @@ object Session {
 
     val subKernel5 = *(createContactKernel())
     subKernel5.~.tryOnline()
+
+
+    val funnyKernel = singleton[(OfflineContact or OnlineContact) with
+      (ContactRawPrinter or ContactPrettyPrinter) with
+      (StandardOutputChannel or MemoryOutputChannel or FunnyOutputChannel)]
+
+    val kernelRef6_a1: &[Contact with ContactPrinter with ({type ch = OutputChannel @funny("haha")})#ch] = funnyKernel
+    val funnySubKernel6 = *(kernelRef6_a1)
+    funnySubKernel6.!.printContact()
+
+    val kernelRef6_a2: &[(OfflineContact or OnlineContact) with ContactPrinter with ({type ch = OutputChannel @funny("haha")})#ch] = funnyKernel
+    println(kernelRef6_a1.altMappings.sketch)
+    println(kernelRef6_a2.altMappings.sketch)
+    //val kernelRef6_err: &[Contact with ContactPrinter with ({type p = OutputChannel @funny("haha")})#p] = kernel
+
+    // it won't compile unless at least one printer fragment has matching annotation @funny("haha")
+    type FunnyContactRawPrinter = ({ type p = ContactRawPrinter @funny("no fun")})#p
+    //type FunnyContactPrettyPrinter = ({ type p = ContactPrettyPrinter @funny("no fun")})#p
+    type FunnyContactPrettyPrinter = ({ type p = ContactPrettyPrinter @funny("haha")})#p
+
+    val funnyKernel2 = singleton[(OfflineContact or OnlineContact) with
+      (FunnyContactRawPrinter or FunnyContactPrettyPrinter) with
+      (StandardOutputChannel or MemoryOutputChannel)]
+
+    type FunnyContactPrinter = ({type p = ContactPrinter @funny("haha")})#p
+    val kernelRef6_b: &[Contact with FunnyContactPrinter] = funnyKernel2
+
+    println(kernelRef6_b.altMappings.sketch)
 
   }
 
