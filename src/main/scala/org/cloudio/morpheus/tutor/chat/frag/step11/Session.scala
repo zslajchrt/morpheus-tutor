@@ -13,7 +13,17 @@ import org.cloudio.morpheus.tutor.chat.frag.step7._
 */
 
 
-object ContactKernelFactory {
+trait ContactKernelFactory {
+
+  def makeContactKernel(firstName: String,
+                        lastName: String,
+                        male: Boolean,
+                        email: String,
+                        nationality: Locale): &[(OfflineContact or OnlineContact) with ContactPrinter]
+
+}
+
+object DefaultContactKernelFactory extends ContactKernelFactory {
 
   var printerCoord: Int = 0
   var channelCoord: Int = 0
@@ -105,7 +115,7 @@ object Session {
     contact.printContact()
   }
 
-  def main(args: Array[String]): Unit = {
+  def main1(args: Array[String]): Unit = {
     val contactData = ContactData("Pepa", "Novák", male = true, email="pepa@depo.cz", Locale.CANADA)
     implicit val offlineContactFrag = single[OfflineContact, Contact](contactData)
     implicit val onlineContactFrag = single[OnlineContact, Contact](contactData)
@@ -186,12 +196,12 @@ object Session {
 
   }
 
-  def main2(args: Array[String]) {
+  def main(args: Array[String]) {
 
     // view, hidden fragments ...
 
     // The kernel factory creates a kernel with hidden dimensions
-    val contactKernelRef = ContactKernelFactory.makeContactKernel("Pepa", "Novák", male = true, email="pepa@depo.cz", Locale.CANADA)
+    val contactKernelRef = DefaultContactKernelFactory.makeContactKernel("Pepa", "Novák", male = true, email="pepa@depo.cz", Locale.CANADA)
     val contactKernel = *(contactKernelRef)
     val contact = contactKernel.~
 
@@ -207,8 +217,8 @@ object Session {
     contact.printContact
 
     // Controlling the hidden dimensions
-    ContactKernelFactory.printerCoord = 1
-    ContactKernelFactory.channelCoord = 0
+    DefaultContactKernelFactory.printerCoord = 1
+    DefaultContactKernelFactory.channelCoord = 0
     contact.remorph(contactDimStr)
 
     println(contact.myAlternative)
@@ -217,7 +227,8 @@ object Session {
     // Creating a kernel view by means of a kernel reference
     // (OfflineContact or OnlineContact) with ContactPrinter => (OfflineContact or OnlineContact)
 
-    val contactAcceptor = new ContactStatusAcceptor(contactKernel.~) // using contactCmp.~ instead contactCmp links the reference with the source morph via its current alternatives
+    //val contactAcceptor = new ContactStatusAcceptor(contactKernel.~) // using contactCmp.~ instead contactCmp links the reference with the source morph via its current alternatives
+    val contactAcceptor = new ContactStatusAcceptor(contactKernel) // using contactCmp.~ instead contactCmp links the reference with the source morph via its current alternatives
     val contactVisitor = new ContactStatusVisitor[Unit] {
 
       override def visitOfflineContact(contact: OfflineContact): Unit = {
