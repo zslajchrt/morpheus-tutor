@@ -14,4 +14,4 @@
 12. [Using a morph as a fragment](https://github.com/zslajchrt/morpheus-tutor/wiki/UsingMorphAsFragment)
 13. [Kernel references](https://github.com/zslajchrt/morpheus-tutor/wiki/KernelReferences)
 14. [Kernel references use cases](https://github.com/zslajchrt/morpheus-tutor/wiki/KernelReferencesUseCases)
-15. Rating alternatives
+15. [Masking alternatives](https://github.com/zslajchrt/morpheus-tutor/wiki/MaskingAlternatives)
