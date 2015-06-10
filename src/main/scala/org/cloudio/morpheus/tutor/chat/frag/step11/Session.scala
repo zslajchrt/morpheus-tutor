@@ -42,7 +42,8 @@ object DefaultContactKernelFactory extends ContactKernelFactory {
       (ContactRawPrinter or ContactPrettyPrinter) with
       (StandardOutputChannel or MemoryOutputChannel)](true)
 
-    val rootStr = rootStrategy(contactModel)
+    //val rootStr = rootStrategy(contactModel)
+    val rootStr = new LastRatingStrategy[contactModel.Model]()
     val printerDimStr = promote[ContactRawPrinter or ContactPrettyPrinter](rootStr, printerCoord)
     val channelDimStr = promote[StandardOutputChannel or MemoryOutputChannel](printerDimStr, channelCoord)
 
@@ -64,9 +65,6 @@ class ContactStatusAcceptor(contactStatusRef: &[(OfflineContact or OnlineContact
   private val contactStatus = *(contactStatusRef).~
 
   def acceptVisitor[T](vis: ContactStatusVisitor[T]): T = {
-    // refresh the status, it does not re-instantiate the proxy's delegate unless its composition changes
-    //contactStatus.remorph()
-
     contactStatus.remorph() match {
       case c: OfflineContact => vis.visitOfflineContact(c)
       case c: OnlineContact => vis.visitOnlineContact(c)
@@ -227,8 +225,8 @@ object Session {
     // Creating a kernel view by means of a kernel reference
     // (OfflineContact or OnlineContact) with ContactPrinter => (OfflineContact or OnlineContact)
 
-    //val contactAcceptor = new ContactStatusAcceptor(contactKernel.~) // using contactCmp.~ instead contactCmp links the reference with the source morph via its current alternatives
-    val contactAcceptor = new ContactStatusAcceptor(contactKernel) // using contactCmp.~ instead contactCmp links the reference with the source morph via its current alternatives
+    val contactAcceptor = new ContactStatusAcceptor(contactKernel.~) // using contactCmp.~ instead contactCmp links the reference with the source morph via its current alternatives
+    //val contactAcceptor = new ContactStatusAcceptor(contactKernel) // using contactCmp.~ instead contactCmp links the reference with the source morph via its current alternatives
     val contactVisitor = new ContactStatusVisitor[Unit] {
 
       override def visitOfflineContact(contact: OfflineContact): Unit = {
