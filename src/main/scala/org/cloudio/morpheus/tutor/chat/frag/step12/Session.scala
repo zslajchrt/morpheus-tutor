@@ -7,7 +7,7 @@ import Morpheus._
 import org.cloudio.morpheus.tutor.chat.frag.step7._
 
 /**
-* Masking alternatives to restrict degrees of freedom of a composite
+* Promoting, masking and rating alternatives to restrict degrees of freedom of a composite
 *
 * Created by zslajchrt on 20/05/15.
 */
