@@ -20,25 +20,23 @@ object Session {
       (ContactRawPrinter or ContactPrettyPrinter) with
       (StandardOutputChannel or MemoryOutputChannel)](true)
 
-    var printerCoord: Int = 0
-    val printerStr = promote[ContactRawPrinter or ContactPrettyPrinter](new LastRatingStrategy[contactModel.Model](), printerCoord)
     var channelCoord: Int = 0
-    val channelStr = promote[StandardOutputChannel or MemoryOutputChannel](printerStr, channelCoord)
+    val channelStr = promote[StandardOutputChannel or MemoryOutputChannel](new LastRatingStrategy[contactModel.Model](), channelCoord)
+    var printerCoord: Int = 0
+    val printerStr = promote[ContactRawPrinter or ContactPrettyPrinter](channelStr, printerCoord)
     var statusCoord: Int = 0
-    val contactStr = promote[OfflineContact or OnlineContact](channelStr, statusCoord)
-    var fixMemOut = 0
-    val maskStrategy = mask[\?[MemoryOutputChannel]](contactStr, fixMemOut)
+    val contactStr = promote[OfflineContact or OnlineContact](printerStr, statusCoord)
 
     val contactData = ContactData("Pepa", "Novák", male = true, email="pepa@depo.cz", Locale.CANADA)
     implicit val offlineContactFrag = single[OfflineContact, Contact](contactData)
     implicit val onlineContactFrag = single[OnlineContact, Contact](contactData)
 
-    val contactKernel = singleton(contactModel, maskStrategy)
+    val contactKernel = singleton(contactModel, contactStr)
 
     def printAllAlts(): Unit = {
       for (i <- 0 to 1; j <- 0 to 1; k <- 0 to 1) {
-        printerCoord = i
-        channelCoord = j
+        channelCoord = i
+        printerCoord = j
         statusCoord = k
         contactKernel.~.remorph
         println(contactKernel.~.myAlternative)
@@ -47,8 +45,18 @@ object Session {
 
     printAllAlts()
 
-    fixMemOut = 1
-    contactKernel.~.remorph
+    println("----")
+
+    var fixMemOut = 1
+    val maskStrategy = mask[\?[MemoryOutputChannel]](contactStr, fixMemOut)
+    contactKernel.~.remorph(maskStrategy)
+    printAllAlts()
+
+    println("----")
+
+    var fixPretty = Set((0, 1))
+    val ratingStrategy = rate[ContactPrettyPrinter](contactKernel.~.strategy, fixPretty)
+    contactKernel.~.remorph(ratingStrategy)
     printAllAlts()
 
     println("----")
@@ -56,6 +64,13 @@ object Session {
     fixMemOut = 0
     contactKernel.~.remorph
     printAllAlts()
+
+    println("----")
+
+    fixPretty = Set((0, 0))
+    contactKernel.~.remorph
+    printAllAlts()
+
 
   }
 }
