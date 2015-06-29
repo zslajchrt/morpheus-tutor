@@ -1,4 +1,4 @@
-package org.cloudio.morpheus.dci.whist.data
+package org.cloudio.morpheus.dci.gambling.whist4.data
 
 /**
  * Created by zslajchrt on 24/06/15.

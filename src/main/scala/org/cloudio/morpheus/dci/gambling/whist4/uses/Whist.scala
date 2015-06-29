@@ -1,8 +1,9 @@
-package org.cloudio.morpheus.dci.whist.uses
+package org.cloudio.morpheus.dci.gambling.whist4.uses
 
 import org.morpheus._
 import org.morpheus.Morpheus._
-import org.cloudio.morpheus.dci.whist.data._
+import org.cloudio.morpheus.dci.gambling.whist4.data._
+import org.cloudio.morpheus.dci.gambling.objects._
 
 import scala.util.Random
 
@@ -185,16 +186,16 @@ trait Round {
     val rightScore = players(1).trickCount + players(3).trickCount
 
     if (leftScore > rightScore) {
-      players(0).won
-      players(2).won
-      players(1).lost
-      players(3).lost
+      players(0).won()
+      players(2).won()
+      players(1).lost()
+      players(3).lost()
       Left(leftScore - 6)
     } else {
-      players(0).lost
-      players(2).lost
-      players(1).won
-      players(3).won
+      players(0).lost()
+      players(2).lost()
+      players(1).won()
+      players(3).won()
       Right(rightScore - 6)
     }
     //Left(0)

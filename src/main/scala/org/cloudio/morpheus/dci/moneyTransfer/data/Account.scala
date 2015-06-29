@@ -11,7 +11,6 @@ import org.morpheus._
 //  override var balance: BigDecimal = initialBalance
 //}
 
-@dimension
 trait Account {
   def Balance: BigDecimal
 

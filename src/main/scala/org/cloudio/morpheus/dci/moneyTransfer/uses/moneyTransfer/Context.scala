@@ -10,49 +10,39 @@ import org.morpheus.dci.DCI._
  * Created by zslajchrt on 22/06/15.
  */
 
-@dimension
-@wrapper
-trait Source extends Account {
-  this: Context =>
-
-  // Designing the role as a dimension wrapper prevents us from having method name clashes.
-  // For example, the compiler will complain unless the following method explicitly mentions `abstract override`, which
-  // informs that it is designed as a wrapper of the method from Account.
-  //
-  //  def decreaseBalance(amount: BigDecimal): Unit = {
-  //      println(s"Decreasing of $amount")
-  //  }
+@fragment
+trait Source {
+  this: Account with Context =>
 
   private def withdraw(amount: BigDecimal) {
-    Source.decreaseBalance(amount)
+    decreaseBalance(amount)
   }
 
   def transfer {
-    Console.println("Source balance is: " + Source.Balance)
+    Console.println("Source balance is: " + Balance)
     Console.println("Destination balance is: " + Destination.Balance)
 
     Destination.deposit(Amount)
-    Source.withdraw(Amount)
+    withdraw(Amount)
 
-    Console.println("Source balance is now: " + Source.Balance)
+    Console.println("Source balance is now: " + Balance)
     Console.println("Destination balance is now: " + Destination.Balance)
   }
 
 }
 
-@dimension
-@wrapper
-trait Destination extends Account {
-  this: Context =>
+@fragment
+trait Destination {
+  this: Account with Context =>
 
   def deposit(amount: BigDecimal) {
-    Destination.increaseBalance(amount)
+    increaseBalance(amount)
   }
 }
 
 trait Context {
-  private[moneyTransfer] val Source: Source
-  private[moneyTransfer] val Destination: Destination
+  private[moneyTransfer] val Source: Account with Source
+  private[moneyTransfer] val Destination: Account with Destination
   // Amount is both a role and stage prop
   val Amount: BigDecimal
 }
@@ -65,6 +55,12 @@ class ContextImpl(srcAcc: Account, dstAcc: Account, val Amount: BigDecimal) exte
 //    implicit val dataFrag = external[Account](srcAcc)
 //    implicit val selfFrag = external[Context](this)
 //    singleton[Account with Source with Context].!
+//  }
+
+//  private[moneyTransfer] val Destination = {
+//    implicit val dataFrag = external[Account](dstAcc)
+//    implicit val selfFrag = external[Context](this)
+//    singleton[Account with Destination with Context].!
 //  }
 
   private[moneyTransfer] val Destination = role[Destination, Account, Context](dstAcc)
