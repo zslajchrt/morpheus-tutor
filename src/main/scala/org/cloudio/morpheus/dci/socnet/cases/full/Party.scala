@@ -1,10 +1,10 @@
-package org.cloudio.morpheus.dci.socnet.cases
+package org.cloudio.morpheus.dci.socnet.cases.full
 
 import java.util.Date
 
 import org.cloudio.morpheus.dci.socnet.objects._
-import org.morpheus._
 import org.morpheus.Morpheus._
+import org.morpheus._
 
 /**
  * Created by zslajchrt on 29/06/15.
