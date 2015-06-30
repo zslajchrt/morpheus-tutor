@@ -26,8 +26,10 @@ trait Party {
   
   // called from contact faces when another party sends a message through a face
   protected def onMessageReceived(message: Message): Unit = {
+    // store the message to the Person entity
     addMessage(message)
     lastMessages ::= message
+    // notify the self-face
     self.onMessage(message)
   }
 

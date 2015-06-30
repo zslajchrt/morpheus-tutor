@@ -49,21 +49,21 @@ trait Context {
 
 class ContextImpl(srcAcc: Account, dstAcc: Account, val Amount: BigDecimal) extends Context {
 
-  private[moneyTransfer] val Source = role[Source, Account, Context](srcAcc)
+//  private[moneyTransfer] val Source = role[Source, Account, Context](srcAcc)
   // The role macro just unfolds in the following code
-//  private[moneyTransfer] val Source = {
-//    implicit val dataFrag = external[Account](srcAcc)
-//    implicit val selfFrag = external[Context](this)
-//    singleton[Account with Source with Context].!
-//  }
+  private[moneyTransfer] val Source = {
+    implicit val dataFrag = external[Account](srcAcc)
+    implicit val selfFrag = external[Context](this)
+    singleton[Account with Source with Context].!
+  }
 
-//  private[moneyTransfer] val Destination = {
-//    implicit val dataFrag = external[Account](dstAcc)
-//    implicit val selfFrag = external[Context](this)
-//    singleton[Account with Destination with Context].!
-//  }
+  private[moneyTransfer] val Destination = {
+    implicit val dataFrag = external[Account](dstAcc)
+    implicit val selfFrag = external[Context](this)
+    singleton[Account with Destination with Context].!
+  }
 
-  private[moneyTransfer] val Destination = role[Destination, Account, Context](dstAcc)
+//  private[moneyTransfer] val Destination = role[Destination, Account, Context](dstAcc)
 
 
   def trans(): Unit = {
@@ -72,10 +72,10 @@ class ContextImpl(srcAcc: Account, dstAcc: Account, val Amount: BigDecimal) exte
 
 }
 
-object UseCase {
+object App {
 
   def main(args: Array[String]): Unit = {
-    val ctx = new ContextImpl(new AccountImpl(10), new AccountImpl(50), 5)
+    val ctx = new ContextImpl(new AccountBase(10), new AccountBase(50), 5)
     ctx.trans()
   }
 

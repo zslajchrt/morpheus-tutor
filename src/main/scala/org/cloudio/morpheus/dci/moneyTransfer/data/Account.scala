@@ -20,7 +20,7 @@ trait Account {
 }
 
 
-class AccountImpl(initialBalance: BigDecimal) extends Account {
+class AccountBase(initialBalance: BigDecimal) extends Account {
 
   private var balance: BigDecimal = initialBalance
 
@@ -29,4 +29,16 @@ class AccountImpl(initialBalance: BigDecimal) extends Account {
   def decreaseBalance(amount: BigDecimal) = balance -= amount
 
   def increaseBalance(amount: BigDecimal) = balance += amount
+}
+
+class SavingsAccount(initialBalance: BigDecimal) extends AccountBase(initialBalance) {
+
+}
+
+class CheckingAccount(initialBalance: BigDecimal) extends AccountBase(initialBalance) {
+
+}
+
+class RetiringAccount(initialBalance: BigDecimal) extends AccountBase(initialBalance) {
+
 }
