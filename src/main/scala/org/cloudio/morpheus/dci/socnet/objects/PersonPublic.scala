@@ -72,6 +72,7 @@ trait Offline extends Status {
   override def isOnline: Boolean = false
 }
 
+
 @fragment
 trait Online extends Status {
   override def isOnline: Boolean = true
