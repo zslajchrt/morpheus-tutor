@@ -129,8 +129,8 @@ object Person {
   val personMorphModel = parse[
       SomeonePublic with
       \?[SomeonePrivate] with // a person is valid (usable) without its private data
-      \?[SomeoneConnections] with
-      \?[SomeoneMessages] with
+      SomeoneConnections with
+      SomeoneMessages with
       (Offline or Online)](true) // the objective state fragments
 }
 
