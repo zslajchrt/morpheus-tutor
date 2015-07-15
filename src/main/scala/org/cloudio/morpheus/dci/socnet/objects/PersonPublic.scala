@@ -22,6 +22,7 @@ trait PersonPublic {
 
 case class PersonPublicInit(nick: String, firstName: String, lastName: String, email: String) extends PersonPublic
 
+
 trait PersonPrivate {
 
   def phone: String
@@ -32,12 +33,11 @@ trait PersonPrivate {
 
 case class PersonPrivateInit(phone: String, address: Address) extends PersonPrivate
 
+
 trait PersonConnections {
   this: PersonPublic =>
 
   def connections: List[Connection]
-
-  def connectedPerson(nick: String): PersonPublic with PersonConnections
 
   def addConnection(connection: Connection): Unit
 
@@ -45,19 +45,16 @@ trait PersonConnections {
 
   def trustedOnly: List[Connection] = connections.filter(_.trusted)
 
-  def isTrusted(nick: String): Boolean = trustedOnly.exists(_.person.nick == nick)
-
-  // friendship is a bidirectional relationship, i.e. I trust you, you trust me
-  def friends = trustedOnly.filter(tc => connectedPerson(tc.person.nick).isTrusted(nick))
+  def isTrusted(nick: String): Boolean = trustedOnly.exists(_.personNick == nick)
 
 }
 
-trait PersonMessages {
-  def addMessage(message: Message): Unit
+trait PersonJobs {
+  def addJob(job: Job): Unit
 
-  def removeMessage(message: Message): Unit
+  def removeJob(job: Job): Unit
 
-  def messages(message: Message): Iterable[Message]
+  def jobs: Iterable[Job]
 }
 
 // faces
@@ -98,30 +95,29 @@ trait SomeoneConnections extends PersonConnections {
 
   override def addConnection(connection: Connection): Unit = conn ::= connection
 
-  override def removeConnection(nick: String): Unit = conn = conn.filterNot(_.person.nick == nick)
+  override def removeConnection(nick: String): Unit = conn = conn.filterNot(_.personNick == nick)
 
-  override def connectedPerson(nick: String): PersonPublic with PersonConnections = ???
 }
 
 
 
 @fragment
-trait SomeoneMessages extends PersonMessages {
-  private var msgs: List[Message] = Nil
+trait SomeoneJobs extends PersonJobs {
+  private var jobList: List[Job] = Nil
 
-  override def addMessage(message: Message): Unit = msgs ::= message
+  override def addJob(job: Job): Unit = jobList ::= job
 
-  override def removeMessage(message: Message): Unit = msgs = msgs.filterNot(_ == message)
-
-  override def messages(message: Message): Iterable[Message] = msgs
+  override def removeJob(job: Job): Unit = jobList = jobList.filterNot(_ == job)
+  
+  override def jobs: Iterable[Job] = jobList
 }
 
 
 case class Address(city: String, street: String, country: String)
 
-case class Connection(person: PersonPublic with PersonConnections, trusted: Boolean)
+case class Connection(personNick: String, trusted: Boolean)
 
-case class Message(message: String, from: PersonPublic, received: Date)
+case class Job(company: String, position: String, from: Date, until: Option[Date])
 
 
 // The objective morph model expresses all valid forms.
@@ -130,7 +126,7 @@ object Person {
       SomeonePublic with
       \?[SomeonePrivate] with // a person is valid (usable) without its private data
       SomeoneConnections with
-      SomeoneMessages with
+      SomeoneJobs with
       (Offline or Online)](true) // the objective state fragments
 }
 
