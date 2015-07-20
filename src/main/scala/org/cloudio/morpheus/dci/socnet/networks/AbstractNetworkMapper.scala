@@ -13,21 +13,22 @@ abstract class AbstractNetworkMapper {
   type SelfType
 
   class TargetKernelHolder(srcKernel: sourceMorphModel.Kernel) {
-    lazy val kernel: targetMorphModel.Kernel = createTargetKernel(srcKernel)
+    lazy val kernel: targetMorphModel.Kernel = mapKernel(srcKernel)
   }
 
-  protected def nodeSelf(nodeKernelHolder: TargetKernelHolder): SelfType
+  protected def nodeSelf(nodeKernelHolder: TargetKernelHolder): &![SelfType]
 
-  lazy val targetKernelHolders: Map[String, TargetKernelHolder] = sourceNetwork.map(srcKernEntry => (srcKernEntry._1, new TargetKernelHolder(srcKernEntry._2)))
+  def mapKernel(srcKernel: sourceMorphModel.Kernel): targetMorphModel.Kernel
+
+  def login(nodeId: String): Option[&![SelfType]] = {
+    // todo: some authentication and authorization
+    for (kh <- targetKernelHolders.get(nodeId)) yield nodeSelf(kh)
+  }
+
+  lazy val targetKernelHolders: Map[String, TargetKernelHolder] =
+    sourceNetwork.map(srcKernEntry => (srcKernEntry._1, new TargetKernelHolder(srcKernEntry._2)))
 
   // a view
   lazy val targetNetwork: Map[String, targetMorphModel.Kernel] = targetKernelHolders.mapValues(_.kernel).view.force
-
-  def createTargetKernel(srcKernel: sourceMorphModel.Kernel): targetMorphModel.Kernel
-
-  def login(nodeId: String): Option[SelfType] = {
-    // todo: authentication and authorization
-    for (kh <- targetKernelHolders.get(nodeId)) yield nodeSelf(kh)
-  }
 
 }
