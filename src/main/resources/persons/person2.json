@@ -1,0 +1,39 @@
+{
+   "public": {
+     "nick": "joe2",
+     "firstName": "Joe2",
+     "lastName": "Doe2",
+     "email": "joe2@gmail.com"
+   },
+   "private": {
+     "phone": "0420-200",
+     "address": {
+       "city": "Prague",
+       "street": "Moskevska",
+       "country": "CZ"
+     }
+   },
+   "connections": [
+     {
+       "personNick": "joe1",
+       "trusted": true
+     },
+     {
+       "personNick": "joe3",
+       "trusted": true
+     }
+   ],
+   "jobs": [
+     {
+       "company": "Amazon",
+       "position": "CFO",
+       "from": "2011-02-21T00:00:00Z",
+       "until": "2013-05-23T00:00:00Z"
+     },
+     {
+       "company": "CloudIO",
+       "position": "CTO",
+       "from": "2013-05-23T00:00:00Z"
+     }
+   ]
+}

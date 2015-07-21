@@ -2,62 +2,78 @@ package org.cloudio.morpheus.dci.socnet.objects
 
 import java.util.Date
 
+import org.json4s.native.JsonMethods
 import org.morpheus._
 import org.morpheus.Morpheus._
 
 /**
  * Created by zslajchrt on 29/06/15.
  */
-trait PersonPublic {
 
-  def nick: String
+// Pure data parts
 
-  def firstName: String
+case class PersonPublic(nick: String, firstName: String, lastName: String, email: String)
 
-  def lastName: String
+case class Address(city: String, street: String, country: String)
 
-  def email: String
+case class PersonPrivate(phone: String, address: Address)
+
+case class Connection(personNick: String, trusted: Boolean)
+
+case class Job(company: String, position: String, from: Date, until: Option[Date])
+
+// Entity fragments holding the data parts
+
+@fragment
+trait PersonPublicEntity {
+
+  protected var personPublic: PersonPublic = _
+
+  def nick = personPublic.nick
+
+  def firstName = personPublic.firstName
+
+  def lastName = personPublic.lastName
+
+  def email = personPublic.email
 
 }
 
-case class PersonPublicInit(nick: String, firstName: String, lastName: String, email: String) extends PersonPublic
 
+@fragment
+trait PersonPrivateEntity {
 
-trait PersonPrivate {
-
-  def phone: String
-
-  def address: Address
+  protected var personPrivate: PersonPrivate = _
 
 }
 
-case class PersonPrivateInit(phone: String, address: Address) extends PersonPrivate
+@fragment
+trait PersonConnectionsEntity {
+  this: PersonPublicEntity =>
 
+  protected var connections: List[Connection] = Nil
 
-trait PersonConnections {
-  this: PersonPublic =>
-
-  def connections: List[Connection]
-
-  def addConnection(connection: Connection): Unit
-
-  def removeConnection(nick: String): Unit
+  def allConnections = connections
 
   def trustedOnly: List[Connection] = connections.filter(_.trusted)
 
   def isTrusted(nick: String): Boolean = trustedOnly.exists(_.personNick == nick)
 
+  def removeConnection(nick: String): Unit = connections = connections.filterNot(_.personNick == personPublic.nick)
+
 }
 
-trait PersonJobs {
-  def addJob(job: Job): Unit
+@fragment
+trait PersonJobsEntity {
+  this: PersonPublicEntity =>
 
-  def removeJob(job: Job): Unit
+  protected var jobs: List[Job] = Nil
 
-  def jobs: Iterable[Job]
+  def isColleague(other: PersonPublicEntity with PersonJobsEntity): Boolean = {
+    other.nick != personPublic.nick &&
+      other.jobs.exists(j1 => jobs.exists(j2 => j1.company == j2.company))
+  }
 }
-
-// faces
 
 @dimension
 trait Status {
@@ -76,57 +92,14 @@ trait Online extends Status {
 }
 
 
-@fragment
-trait SomeonePublic extends dlg[PersonPublic] {
-}
-
-
-@fragment
-trait SomeonePrivate extends dlg[PersonPrivate] {
-}
-
-@fragment
-trait SomeoneConnections extends PersonConnections {
-  this: PersonPublic =>
-
-  private var conn: List[Connection] = Nil
-
-  override def connections: List[Connection] = conn
-
-  override def addConnection(connection: Connection): Unit = conn ::= connection
-
-  override def removeConnection(nick: String): Unit = conn = conn.filterNot(_.personNick == nick)
-
-}
-
-
-
-@fragment
-trait SomeoneJobs extends PersonJobs {
-  private var jobList: List[Job] = Nil
-
-  override def addJob(job: Job): Unit = jobList ::= job
-
-  override def removeJob(job: Job): Unit = jobList = jobList.filterNot(_ == job)
-  
-  override def jobs: Iterable[Job] = jobList
-}
-
-
-case class Address(city: String, street: String, country: String)
-
-case class Connection(personNick: String, trusted: Boolean)
-
-case class Job(company: String, position: String, from: Date, until: Option[Date])
-
-
-// The objective morph model expresses all valid forms.
+// Morph Model
 object Person {
-  val personMorphModel = parse[
-      SomeonePublic with
-      \?[SomeonePrivate] with // a person is valid (usable) without its private data
-      SomeoneConnections with
-      SomeoneJobs with
-      (Offline or Online)](true) // the objective state fragments
-}
 
+  type PersonType = PersonPublicEntity with
+    \?[PersonPrivateEntity] with // the private data are not provided to anyone
+    PersonConnectionsEntity with
+    PersonJobsEntity with
+    (Offline or Online)
+
+  val personMorphModel = parse[PersonType](true)
+}

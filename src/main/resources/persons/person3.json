@@ -1,0 +1,33 @@
+{
+   "public": {
+     "nick": "joe3",
+     "firstName": "Joe3",
+     "lastName": "Doe3",
+     "email": "joe1@gmail.com"
+   },
+   "private": {
+     "phone": "0420-300",
+     "address": {
+       "city": "Prague",
+       "street": "Moskevska",
+       "country": "CZ"
+     }
+   },
+   "connections": [
+     {
+       "personNick": "joe2",
+       "trusted": false
+     },
+     {
+       "personNick": "joe4",
+       "trusted": true
+     }
+   ],
+   "jobs": [
+     {
+       "company": "Google",
+       "position": "CEO",
+       "from": "2011-04-11T00:00:00Z"
+     }
+   ]
+}

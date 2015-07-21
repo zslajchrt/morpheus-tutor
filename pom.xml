@@ -7,6 +7,7 @@
     <inceptionYear>2014</inceptionYear>
     <properties>
         <scala.version>2.11.5</scala.version>
+        <scala.versionShort>2.11</scala.versionShort>
     </properties>
 
     <repositories>
@@ -43,6 +44,12 @@
                     <artifactId>scala-compiler</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json4s</groupId>
+            <artifactId>json4s-native_${scala.versionShort}</artifactId>
+            <version>3.2.11</version>
         </dependency>
 
         <dependency>
