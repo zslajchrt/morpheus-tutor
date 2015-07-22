@@ -85,7 +85,7 @@ object PersonSample {
 
   def loadPerson(id: Int): personMorphModel.Kernel = {
     val res = getClass.getClassLoader.getResourceAsStream(s"persons/person$id.json")
-    val p = singleton(personMorphModel, rootStrategy(personMorphModel))
+    val p = newPerson()
     JsonLoaders.load(p, JsonMethods.parse(res))
     p
   }

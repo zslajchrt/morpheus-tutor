@@ -21,10 +21,33 @@ import org.morpheus._
 
 @fragment
 trait EndUser {
+  this: PersonPublicEntity with Scene with NodeStats =>
+
+  def onLogin(): Unit = {
+    for (c <- colleagues) {
+      addSubjectPerception("Colleagues", "EndUser", c.nick, "Colleague")
+      c.onLogin(this)
+    }
+  }
+
+  def onLogout(): Unit = {
+    removeSubjectPerceptions("Colleagues")
+    for (c <- colleagues) {
+      c.onLogout(this)
+    }
+  }
 }
 
 @fragment
 trait Colleague {
+  this: NodeStats =>
+
+  def onLogin(endUser: EndUser with PersonPublicEntity): Unit =
+    addObjectPerception("Colleagues", endUser.nick, "EndUser", "Colleague")
+
+  def onLogout(endUser: EndUser with PersonPublicEntity): Unit =
+    removeObjectPerceptions("Colleagues", endUser.nick)
+
 }
 
 // Roles Morph Model
@@ -86,6 +109,17 @@ class NetworkMapper(val sourceNetwork: Map[String, personMorphModel.Kernel]) ext
 
   }
 
+  def signIn(userNick: String): Either[EndUserFace, String] = login(userNick) match {
+    case Right(errMsg) => Right(errMsg)
+    case Left(userRef) =>
+      val user = *(userRef).~
+      user.onLogin()
+      Left(user)
+  }
+
+  def signOut(user: EndUserFace): Unit = {
+    user.onLogout()
+  }
 }
 
 // Application
@@ -99,11 +133,23 @@ object Colleagues {
       sys.error("No user nick specified")
     }
 
-    sampleNetwork.login(args(0)) match {
+    val person = PersonSample.personsAsMap(args(0))
+    person.~.remorph()
+    println(s"${person.~.nick} is online: ${person.~.isOnline}")
+
+    sampleNetwork.signIn(args(0)) match {
       case Right(errMsg) => println(errMsg)
-      case Left(userRef) =>
-        val user = *(userRef).~
+      case Left(user) =>
+
         println(s"${user.nick}: ${user.colleagues.map(_.nick)}")
+
+        person.~.remorph()
+        println(s"${person.~.nick} is online: ${person.~.isOnline}")
+
+        sampleNetwork.signOut(user)
+
+        person.~.remorph()
+        println(s"${person.~.nick} is online: ${person.~.isOnline}")
     }
 
   }

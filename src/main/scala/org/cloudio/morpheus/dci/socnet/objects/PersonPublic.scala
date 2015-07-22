@@ -91,6 +91,35 @@ trait Online extends Status {
   override def isOnline: Boolean = true
 }
 
+case class Perception(network: String, subjectNick: String, subjectRole: String, objectNick: String, objectRole: String)
+
+@fragment
+trait NodeStats {
+  this: PersonPublicEntity =>
+
+  protected var perceivedBy: List[Perception] = Nil
+  protected var perceives: List[Perception] = Nil
+
+  def subjectPerceptions = perceives
+
+  def objectPerceptions = perceivedBy
+
+  def addSubjectPerception(network: String, subjectRole: String, objectNick: String, objectRole: String): Unit = {
+    perceives ::= Perception(network, nick, subjectRole, objectNick, objectRole)
+  }
+
+  def addObjectPerception(network: String, subjectNick: String, subjectRole: String, objectRole: String): Unit = {
+    perceives ::= Perception(network, subjectNick, subjectRole, nick, objectRole)
+  }
+
+  def removeSubjectPerceptions(network: String): Unit = {
+    perceives = perceives.filterNot(_.network == network)
+  }
+
+  def removeObjectPerceptions(network: String, subjectNick: String): Unit = {
+    perceives = perceivedBy.filterNot(p => p.network == network && p.subjectNick == subjectNick)
+  }
+}
 
 // Morph Model
 object Person {
@@ -99,7 +128,20 @@ object Person {
     \?[PersonPrivateEntity] with // the private data are not provided to anyone
     PersonConnectionsEntity with
     PersonJobsEntity with
-    (Offline or Online)
+    (Offline or Online) with
+    NodeStats
 
   val personMorphModel = parse[PersonType](true)
+
+  val statusSwitch: (Option[personMorphModel.MutableLUB]) => Option[Int] =
+    for (person <- _) yield {
+      if (person.subjectPerceptions.isEmpty) 0 else 1
+    }
+
+  def newPerson(): personMorphModel.Kernel = {
+    val sw: Option[personMorphModel.MutableLUB] => Int = null
+    val strategy = promote[Offline or Online](personMorphModel)(statusSwitch)
+    singleton(personMorphModel, strategy)
+  }
+
 }

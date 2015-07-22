@@ -24,7 +24,6 @@ abstract class AbstractNetworkMapper {
 
   def login(nodeId: String): Either[&![Subject], String] = {
     // todo: some authentication and authorization
-    //for (kh <- targetKernelHolders.get(nodeId)) yield makeSelf(kh)
     targetKernelHolders.get(nodeId) match {
       case None => Right(s"Unknown node $nodeId")
       case Some(kh) => Left(makeSelf(kh))
