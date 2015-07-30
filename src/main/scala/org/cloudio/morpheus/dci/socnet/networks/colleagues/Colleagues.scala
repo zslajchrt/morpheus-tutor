@@ -21,33 +21,33 @@ import org.morpheus._
 
 @fragment
 trait EndUser {
-  this: PersonPublicEntity with Scene with NodeStats =>
-
+//  this: PersonPublicEntity with Scene with NodeStats =>
+//
   def onLogin(): Unit = {
-    for (c <- colleagues) {
-      addSubjectPerception("Colleagues", "EndUser", c.nick, "Colleague")
-      c.onLogin(this)
-    }
+//    for (c <- colleagues) {
+//      addSubjectPerception("Colleagues", "EndUser", c.nick, "Colleague")
+//      c.onLogin(this)
+//    }
   }
 
   def onLogout(): Unit = {
-    removeSubjectPerceptions("Colleagues")
-    for (c <- colleagues) {
-      c.onLogout(this)
-    }
+//    removeSubjectPerceptions("Colleagues")
+//    for (c <- colleagues) {
+//      c.onLogout(this)
+//    }
   }
 }
 
 @fragment
 trait Colleague {
-  this: NodeStats =>
-
-  def onLogin(endUser: EndUser with PersonPublicEntity): Unit =
-    addObjectPerception("Colleagues", endUser.nick, "EndUser", "Colleague")
-
-  def onLogout(endUser: EndUser with PersonPublicEntity): Unit =
-    removeObjectPerceptions("Colleagues", endUser.nick)
-
+//  this: NodeStats =>
+//
+//  def onLogin(endUser: EndUser with PersonPublicEntity): Unit =
+//    addObjectPerception("Colleagues", endUser.nick, "EndUser", "Colleague")
+//
+//  def onLogout(endUser: EndUser with PersonPublicEntity): Unit =
+//    removeObjectPerceptions("Colleagues", endUser.nick)
+//
 }
 
 // Roles Morph Model
@@ -133,9 +133,9 @@ object Colleagues {
       sys.error("No user nick specified")
     }
 
-    val person = PersonSample.personsAsMap(args(0))
-    person.~.remorph()
-    println(s"${person.~.nick} is online: ${person.~.isOnline}")
+//    val person = PersonSample.personsAsMap(args(0))
+//    person.~.remorph()
+//    println(s"${person.~.nick} is online: ${person.~.isOnline}")
 
     sampleNetwork.signIn(args(0)) match {
       case Right(errMsg) => println(errMsg)
@@ -143,13 +143,13 @@ object Colleagues {
 
         println(s"${user.nick}: ${user.colleagues.map(_.nick)}")
 
-        person.~.remorph()
-        println(s"${person.~.nick} is online: ${person.~.isOnline}")
+//        person.~.remorph()
+//        println(s"${person.~.nick} is online: ${person.~.isOnline}")
 
         sampleNetwork.signOut(user)
 
-        person.~.remorph()
-        println(s"${person.~.nick} is online: ${person.~.isOnline}")
+        //person.~.remorph()
+        //println(s"${person.~.nick} is online: ${person.~.isOnline}")
     }
 
   }

@@ -89,6 +89,9 @@ trait Offline extends Status {
 @fragment
 trait Online extends Status {
   override def isOnline: Boolean = true
+
+//  def newSession(nick: String):
+
 }
 
 case class Perception(network: String, subjectNick: String, subjectRole: String, objectNick: String, objectRole: String)
@@ -125,23 +128,22 @@ trait NodeStats {
 object Person {
 
   type PersonType = PersonPublicEntity with
-    \?[PersonPrivateEntity] with // the private data are not provided to anyone
+    \?[PersonPrivateEntity] with // the private data are not shown to anyone
     PersonConnectionsEntity with
-    PersonJobsEntity with
-    (Offline or Online) with
-    NodeStats
+    PersonJobsEntity
+    //with (Offline or Online) with NodeStats
 
   val personMorphModel = parse[PersonType](true)
 
-  val statusSwitch: (Option[personMorphModel.MutableLUB]) => Option[Int] =
-    for (person <- _) yield {
-      if (person.subjectPerceptions.isEmpty) 0 else 1
-    }
+//  val statusSwitch: (Option[personMorphModel.MutableLUB]) => Option[Int] =
+//    for (person <- _) yield {
+//      if (person.subjectPerceptions.isEmpty) 0 else 1
+//    }
 
   def newPerson(): personMorphModel.Kernel = {
-    val sw: Option[personMorphModel.MutableLUB] => Int = null
-    val strategy = promote[Offline or Online](personMorphModel)(statusSwitch)
-    singleton(personMorphModel, strategy)
+    //val strategy = promote[Offline or Online](personMorphModel)(statusSwitch)
+    //singleton(personMorphModel, strategy)
+    singleton(personMorphModel, rootStrategy(personMorphModel))
   }
 
 }

@@ -6,12 +6,9 @@
      "email": "joe2@gmail.com"
    },
    "private": {
-     "phone": "0420-200",
-     "address": {
-       "city": "Prague",
-       "street": "Moskevska",
-       "country": "CZ"
-     }
+     "city": "Prague",
+     "street": "Moskevska",
+     "country": "CZ"
    },
    "connections": [
      {

@@ -31,7 +31,28 @@ trait JsonPersonPrivateLoader extends PersonLoader[JValue] {
 
   override def load(personJson: JValue): Unit = {
     implicit val formats = DefaultFormats
-    personPrivate = personJson.\("private").extract[PersonPrivate]
+    personJson.\("private").extractOpt[PersonPrivate] match {
+      case Some(privateData) => personPrivate = privateData
+      case None =>
+    }
+  }
+}
+
+
+case class PersonPrivateV1_0(phone: Option[String], country: String, city: String, street: String)
+
+@fragment
+trait JsonPersonPrivateLoaderV1_0 extends PersonLoader[JValue] {
+  this: PersonPrivateEntity =>
+
+  override def load(personJson: JValue): Unit = {
+    implicit val formats = DefaultFormats
+    personJson.\("private").extractOpt[PersonPrivateV1_0] match {
+      case Some(privateDataV1_0) =>
+        personPrivate = PersonPrivate(privateDataV1_0.phone.getOrElse(""),
+          Address(privateDataV1_0.city, privateDataV1_0.street, privateDataV1_0.country))
+      case None =>
+    }
   }
 }
 
@@ -59,19 +80,28 @@ object JsonLoaders {
 
   type PersonLoaders = $[JsonPersonPublicLoader] or
     $[JsonPersonPrivateLoader] or
+    $[JsonPersonPrivateLoaderV1_0] or
     $[JsonPersonConnectionsLoader] or
     $[JsonPersonJobsLoader]
 
   val loadersModel = parseRef[PersonLoaders]
 
-  def load(pl: &[PersonLoaders], personJson: JValue): Unit = {
-    //val personJson: JValue = JsonMethods.parse(jsonSrc)
+  def load(pl: &[PersonLoaders], personJson: JValue): loadersModel.Kernel = {
     val plKernel = *(pl,
       single[JsonPersonPublicLoader],
       single[JsonPersonPrivateLoader],
+      single[JsonPersonPrivateLoaderV1_0],
       single[JsonPersonConnectionsLoader],
       single[JsonPersonJobsLoader])
 
+    for (loader <- plKernel) {
+      loader.load(personJson)
+    }
+
+    plKernel
+  }
+
+  def reload(plKernel: loadersModel.Kernel, personJson: JValue): Unit = {
     for (loader <- plKernel) {
       loader.load(personJson)
     }
@@ -93,4 +123,21 @@ object PersonSample {
   val persons = List(loadPerson(1), loadPerson(2), loadPerson(3), loadPerson(4))
   val personsAsMap = persons.map(pk => (pk.~.nick, pk)).toMap
 
+//  def main(args: Array[String]) {
+//    val j = JsonMethods.parse(getClass.getClassLoader.getResourceAsStream(s"persons/person1.json"))
+//    val p1: JsonLoaders.loadersModel.Kernel = JsonLoaders.load(newPerson(), j)
+//
+//    val ts1 = System.currentTimeMillis()
+//
+//    val allLoaders = morphKernelToIterable(p1).toList
+//
+//    for (i <- 0 to 1000) {
+//      for (loader <- allLoaders) {
+//        loader.load(j)
+//      }
+//    }
+//    val ts2 = System.currentTimeMillis()
+//    println(s"Time spent: ${ts2 - ts1}")
+//
+//  }
 }
