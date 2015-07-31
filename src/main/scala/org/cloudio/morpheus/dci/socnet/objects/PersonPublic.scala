@@ -22,6 +22,8 @@ case class Connection(personNick: String, trusted: Boolean)
 
 case class Job(company: String, position: String, from: Date, until: Option[Date])
 
+case class Ad(title: String, url: String, date: Date, keywords: List[String])
+
 // Entity fragments holding the data parts
 
 @fragment
@@ -72,6 +74,17 @@ trait PersonJobsEntity {
   def isColleague(other: PersonPublicEntity with PersonJobsEntity): Boolean = {
     other.nick != personPublic.nick &&
       other.jobs.exists(j1 => jobs.exists(j2 => j1.company == j2.company))
+  }
+}
+
+@fragment
+trait PersonAdStatsEntity {
+  this: PersonPublicEntity =>
+
+  protected var seenAds: List[Ad] = Nil
+
+  def addSeenAd(ad: Ad): Unit = {
+    seenAds ::= ad
   }
 }
 
@@ -130,7 +143,8 @@ object Person {
   type PersonType = PersonPublicEntity with
     \?[PersonPrivateEntity] with // the private data are not shown to anyone
     PersonConnectionsEntity with
-    PersonJobsEntity
+    PersonJobsEntity with
+    \?[PersonAdStatsEntity]
     //with (Offline or Online) with NodeStats
 
   val personMorphModel = parse[PersonType](true)
@@ -143,7 +157,8 @@ object Person {
   def newPerson(): personMorphModel.Kernel = {
     //val strategy = promote[Offline or Online](personMorphModel)(statusSwitch)
     //singleton(personMorphModel, strategy)
-    singleton(personMorphModel, rootStrategy(personMorphModel))
+    val strat = mask[\?[PersonAdStatsEntity]](rootStrategy(personMorphModel), Some(0))
+    singleton(personMorphModel, strat)
   }
 
 }

@@ -1,7 +1,9 @@
 package org.cloudio.morpheus.dci.socnet.networks.email
 
+import java.util.Date
+
 import org.cloudio.morpheus.dci.socnet.objects.Person.PersonType
-import org.cloudio.morpheus.dci.socnet.objects.{PersonSample, PersonPublicEntity, PersonConnectionsEntity}
+import org.cloudio.morpheus.dci.socnet.objects._
 import org.morpheus._
 import org.morpheus.Morpheus._
 
@@ -30,6 +32,7 @@ trait AttachmentValidator extends MailService {
 
   def checkAttachments(attachments: List[Attachment]): Unit = {
     // todo
+    println(s"Checked ${attachments.size} attachments")
   }
 
 }
@@ -38,11 +41,13 @@ trait AttachmentValidator extends MailService {
 @wrapper
 trait AdAppender extends MailService {
 
-  this: AdSelector =>
+  this: PersonAdStatsEntity with AdSelector =>
 
   abstract override def send(msg: Message): Unit = {
     val ad = selectAd(msg)
     val msgWithAd = s"${msg.message}\n$ad"
+
+    addSeenAd(ad)
 
     super.send(msg.copy(message = msgWithAd))
   }
@@ -51,7 +56,7 @@ trait AdAppender extends MailService {
 
 @dimension
 trait AdSelector {
-  def selectAd(message: Message): String
+  def selectAd(message: Message): Ad
 }
 
 // Mocks
@@ -65,55 +70,51 @@ trait MailServiceMock extends MailService {
 
 @fragment
 trait AdSelectorMock extends AdSelector {
-  override def selectAd(message: Message): String = "Ad Mock"
+  override def selectAd(message: Message) = Ad("Ad Mock", "http://abc", new Date, keywords = List("fun"))
 }
 
 @fragment
 trait AdSelectorMock2 extends AdSelector {
-  override def selectAd(message: Message): String = "Ad Mock2"
+  override def selectAd(message: Message) = Ad("Ad Mock2", "http://xyz", new Date, keywords = List("fun", "holiday"))
 }
 
 // Assemblage
 
 object MailServiceAsm {
 
-  type ModelType = $[MailServiceMock]
-    with \?[$[AdAppender]
-    with ($[AdSelectorMock] or $[AdSelectorMock2])]
-    with $[AttachmentValidator]
-    with PersonPublicEntity
+  type ModelType = MailServiceMock
+    with \?[AttachmentValidator]
+    with \?[AdAppender with (AdSelectorMock or AdSelectorMock2)]
 
-  //val model = parseRef[ModelType]
-  //val kernel = singleton(model, rootStrategy(model))
+  val mailServiceKernel = singleton_?[ModelType]
+  val mailServiceFragments = tupled(mailServiceKernel)
 
   object MailServiceStrategy {
 
     def apply(msg: Message) = {
-      //promote[\?[AdAppender with (AdSelectorMock or AdSelectorMock2)]](kernel.defaultStrategy, 2)
-//      val hasAd: Option[Int] = if (msg.message.length > 10) Some(0) else None
-//      val adType = for (ha <- hasAd) yield if (msg.attachments.isEmpty) 0 else 1
-//
-//      val s1 = promote[AdAppender](kernel.defaultStrategy, hasAd)
-//      val s2 = promote[AdSelectorMock or AdSelectorMock2](s1, adType)
-//
-//      s2
-      null
-    }
+      val hasAtt: Option[Int] = if (msg.attachments.nonEmpty) Some(0) else None
+      val hasAd: Option[Int] = if (msg.message.length > 10) Some(0) else None
+      val adSelType = for (ha <- hasAd) yield if (msg.attachments.isEmpty) 0 else 1
 
+      val s1 = promote[AttachmentValidator](rootStrategy(mailServiceKernel.model), hasAtt)
+      val s2 = promote[AdAppender](s1, hasAd)
+      promote[AdSelectorMock or AdSelectorMock2](s2, adSelType)
+    }
   }
 
   def main(args: Array[String]) {
+    //val t = mailServiceKernel.tupled
 
     val user = PersonSample.personsAsMap("joe1")
-    val mailRef: &![ModelType] = user
 
-//    val user = PersonSample.personsAsMap("joe1")
-//    //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "Bye", Nil)
-//    //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", Nil)
-//    val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", List(Attachment("att1", Array[Byte](0,1,2), "mime1")))
-//    val morph = kernel.morph_~(MailServiceStrategy(msg))
-//    morph.send(msg)
-//    println(s"\nUsing alternative: ${morph.myAlternative}")
+    val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "Bye", Nil)
+    //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", Nil)
+    //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", List(Attachment("att1", Array[Byte](0,1,2), "mime1")))
+
+    val mailRef: &[$[ModelType]] = user
+    val mailKernel = *(mailRef, MailServiceStrategy(msg), mailServiceFragments)
+    mailKernel.!.send(msg)
+    println(s"\nUsing alternative: ${mailKernel.!.myAlternative}")
 
   }
 
