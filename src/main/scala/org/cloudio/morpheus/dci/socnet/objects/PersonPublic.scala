@@ -154,11 +154,8 @@ object Person {
 //      if (person.subjectPerceptions.isEmpty) 0 else 1
 //    }
 
-  def newPerson(): personMorphModel.Kernel = {
-    //val strategy = promote[Offline or Online](personMorphModel)(statusSwitch)
-    //singleton(personMorphModel, strategy)
-    val strat = mask[\?[PersonAdStatsEntity]](rootStrategy(personMorphModel), Some(0))
-    singleton(personMorphModel, strat)
+  def newPerson(strategy: MorphingStrategy[personMorphModel.Model]): personMorphModel.Kernel = {
+    singleton(personMorphModel, strategy)
   }
 
 }

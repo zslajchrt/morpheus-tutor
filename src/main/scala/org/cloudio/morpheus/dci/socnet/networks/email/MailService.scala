@@ -107,9 +107,9 @@ object MailServiceAsm {
 
     val user = PersonSample.personsAsMap("joe1")
 
-    val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "Bye", Nil)
+    //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "Bye", Nil)
     //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", Nil)
-    //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", List(Attachment("att1", Array[Byte](0,1,2), "mime1")))
+    val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", List(Attachment("att1", Array[Byte](0,1,2), "mime1")))
 
     val mailRef: &[$[ModelType]] = user
     val mailKernel = *(mailRef, MailServiceStrategy(msg), mailServiceFragments)
