@@ -105,7 +105,12 @@ object MailServiceAsm {
   def main(args: Array[String]) {
     //val t = mailServiceKernel.tupled
 
-    val user = PersonSample.personsAsMap("joe1")
+    val user = PersonSample.personsAsMap("joe4")
+    println(user.!.myAlternative)
+    val alts = user.!.alternatives
+    val userPriv = asMorphOf[PersonPrivateCommon](user)
+    println(userPriv.myAlternative)
+    println(userPriv.phone)
 
     //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "Bye", Nil)
     //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", Nil)

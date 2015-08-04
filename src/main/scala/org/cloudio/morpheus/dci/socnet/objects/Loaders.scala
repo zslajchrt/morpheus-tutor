@@ -34,7 +34,6 @@ trait JsonPersonPrivateLoader extends PersonLoader[JValue] {
 
   override def load(personJson: JValue) = {
     implicit val formats = DefaultFormats
-    val frag = fragmentInReferredKernel[PersonPrivateEntity](this)
     personJson.\("private").extractOpt[PersonPrivate] match {
       case Some(privateData) =>
         personPrivate = privateData
@@ -49,19 +48,16 @@ trait JsonPersonPrivateLoader extends PersonLoader[JValue] {
 
 @fragment
 trait JsonPersonPrivateLoaderV1_0 extends PersonLoader[JValue] {
-  this: PersonPrivateEntity =>
+  this: PersonPrivateV1_0Entity =>
 
   override def load(personJson: JValue) = {
     implicit val formats = DefaultFormats
-    val frag = fragmentInReferredKernel[PersonPrivateEntity](this)
     personJson.\("private").extractOpt[PersonPrivateV1_0] match {
       case Some(privateDataV1_0) =>
-        personPrivate = PersonPrivate(privateDataV1_0.phone.getOrElse(""),
-          Address(privateDataV1_0.city, privateDataV1_0.street, privateDataV1_0.country))
+        personPrivateV1_0 = PersonPrivateV1_0(privateDataV1_0.phone, privateDataV1_0.country, privateDataV1_0.city, privateDataV1_0.street)
+        success[PersonPrivateV1_0Entity]
 
-          success[PersonPrivateEntity]
-
-      case None => failure[PersonPrivateEntity]("invalid content")
+      case None => failure[PersonPrivateV1_0Entity]("invalid content")
     }
   }
 }
@@ -110,6 +106,8 @@ object JsonLoaders {
     JsonPersonJobsLoader or
     JsonPersonAdStatsLoader]
 
+//  type PersonLoaders = $[JsonPersonPrivateLoaderV1_0]
+
   val loadersModel = parseRef[PersonLoaders]
 
   val loaderFactoriesKernel = singleton_?[$[PersonLoaders]]
@@ -117,7 +115,6 @@ object JsonLoaders {
 
   def load(pl: &[PersonLoaders], personJson: JValue): Set[Int] = {
     val plKernel = *(pl, loaderFactories)
-
     val failedFragments = for (loader <- plKernel;
                                loaderResult = loader.load(personJson)
                                if !loaderResult.succeeded;
@@ -170,5 +167,5 @@ object PersonSample {
   //
   //  }
 
-
 }
+

@@ -7,11 +7,9 @@
    },
    "private": {
      "phone": "0420-400",
-     "address": {
-       "city": "Prague",
-       "street": "Moskevska",
-       "country": "CZ"
-     }
+     "city": "Prague",
+     "street": "Moskevska",
+     "country": "CZ"
    },
    "connections": [
      {

@@ -32,18 +32,24 @@ case class Ad(title: String, url: String, date: Date, keywords: List[String])
 trait PersonPrivateCommon {
   this: PersonPrivateEntity or PersonPrivateV1_0Entity =>
 
-  //lazy val privateEntity: Either[]
+  lazy val privateEntity: Either[PersonPrivateEntity, PersonPrivateV1_0Entity] = {
+    select[PersonPrivateEntity](this) match {
+      case Some(pp) => Left(pp)
+      case None =>
+        select[PersonPrivateV1_0Entity](this) match {
+          case Some(pp2) => Right(pp2)
+          case None => sys.error("no private fragment")
+        }
+    }
+  }
 
-  def phone: Option[String] = {
-//    select[PersonPrivateEntity](this) match {
-//      case Some(pp) => Some(pp.privateData.phone)
-//      case None =>
-//        select[PersonPrivateV1_0Entity](this) match {
-//          case Some(pp2) => pp2.privateData.phone
-//          case None => sys.error("no private fragment")
-//        }
-//    }
-    None
+  def phone: Option[String] = privateEntity match {
+    case Left(pp) =>
+      val data: PersonPrivate = pp.privateData
+      Some(data.phone)
+    case Right(pp) =>
+      val data: PersonPrivateV1_0 = pp.privateData
+      data.phone
   }
 }
 
@@ -133,9 +139,10 @@ trait Offline extends Status {
 trait Online extends Status {
   override def isOnline: Boolean = true
 
-//  def newSession(nick: String):
+  //  def newSession(nick: String):
 
 }
+
 
 case class Perception(network: String, subjectNick: String, subjectRole: String, objectNick: String, objectRole: String)
 
@@ -175,14 +182,14 @@ object Person {
     PersonConnectionsEntity with
     PersonJobsEntity with
     \?[PersonAdStatsEntity]
-    //with (Offline or Online) with NodeStats
+  //with (Offline or Online) with NodeStats
 
   val personMorphModel = parse[PersonType](true)
 
-//  val statusSwitch: (Option[personMorphModel.MutableLUB]) => Option[Int] =
-//    for (person <- _) yield {
-//      if (person.subjectPerceptions.isEmpty) 0 else 1
-//    }
+  //  val statusSwitch: (Option[personMorphModel.MutableLUB]) => Option[Int] =
+  //    for (person <- _) yield {
+  //      if (person.subjectPerceptions.isEmpty) 0 else 1
+  //    }
 
   def newPerson(strategy: MorphingStrategy[personMorphModel.Model]): personMorphModel.Kernel = {
     singleton(personMorphModel, strategy)
