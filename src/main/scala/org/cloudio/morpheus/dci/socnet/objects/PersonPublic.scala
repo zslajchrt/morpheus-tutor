@@ -18,6 +18,8 @@ case class Address(city: String, street: String, country: String)
 
 case class PersonPrivate(phone: String, address: Address)
 
+case class PersonPrivateV1_0(phone: Option[String], country: String, city: String, street: String)
+
 case class Connection(personNick: String, trusted: Boolean)
 
 case class Job(company: String, position: String, from: Date, until: Option[Date])
@@ -25,6 +27,25 @@ case class Job(company: String, position: String, from: Date, until: Option[Date
 case class Ad(title: String, url: String, date: Date, keywords: List[String])
 
 // Entity fragments holding the data parts
+
+@fragment
+trait PersonPrivateCommon {
+  this: PersonPrivateEntity or PersonPrivateV1_0Entity =>
+
+  //lazy val privateEntity: Either[]
+
+  def phone: Option[String] = {
+//    select[PersonPrivateEntity](this) match {
+//      case Some(pp) => Some(pp.privateData.phone)
+//      case None =>
+//        select[PersonPrivateV1_0Entity](this) match {
+//          case Some(pp2) => pp2.privateData.phone
+//          case None => sys.error("no private fragment")
+//        }
+//    }
+    None
+  }
+}
 
 @fragment
 trait PersonPublicEntity {
@@ -47,6 +68,15 @@ trait PersonPrivateEntity {
 
   protected var personPrivate: PersonPrivate = _
 
+  def privateData = personPrivate
+}
+
+@fragment
+trait PersonPrivateV1_0Entity {
+
+  protected var personPrivateV1_0: PersonPrivateV1_0 = _
+
+  def privateData = personPrivateV1_0
 }
 
 @fragment
@@ -141,7 +171,7 @@ trait NodeStats {
 object Person {
 
   type PersonType = PersonPublicEntity with
-    \?[PersonPrivateEntity] with // the private data are not shown to anyone
+    \?[(PersonPrivateEntity or PersonPrivateV1_0Entity) with PersonPrivateCommon] with // the private data are not shown to anyone
     PersonConnectionsEntity with
     PersonJobsEntity with
     \?[PersonAdStatsEntity]

@@ -5,18 +5,16 @@ import org.json4s.{DefaultFormats, JString, JValue}
 import org.json4s.native.JsonMethods
 import org.morpheus._
 import org.morpheus.Morpheus._
-import shapeless.Poly1
+import FragmentValidator._
 
 /**
  * Created by zslajchrt on 21/07/15.
  */
 
-case class LoaderResult(fragment: Option[Frag[_, _]], succeeded: Boolean)
-
 @dimension
 trait PersonLoader[T] {
 
-  def load(personDoc: T): LoaderResult
+  def load(personDoc: T): ValidationResult[_]
 }
 
 @fragment
@@ -26,7 +24,7 @@ trait JsonPersonPublicLoader extends PersonLoader[JValue] {
   override def load(personJson: JValue) = {
     implicit val formats = DefaultFormats
     personPublic = personJson.\("public").extract[PersonPublic]
-    LoaderResult(fragmentInReferredKernel[PersonPublicEntity](this), true)
+    success[PersonPublicEntity]
   }
 }
 
@@ -40,16 +38,14 @@ trait JsonPersonPrivateLoader extends PersonLoader[JValue] {
     personJson.\("private").extractOpt[PersonPrivate] match {
       case Some(privateData) =>
         personPrivate = privateData
-        LoaderResult(frag, true)
+        success[PersonPrivateEntity]
 
-      case None => LoaderResult(frag, false)
+      case None => failure[PersonPrivateEntity]("invalid content")
 
     }
   }
 }
 
-
-case class PersonPrivateV1_0(phone: Option[String], country: String, city: String, street: String)
 
 @fragment
 trait JsonPersonPrivateLoaderV1_0 extends PersonLoader[JValue] {
@@ -63,9 +59,9 @@ trait JsonPersonPrivateLoaderV1_0 extends PersonLoader[JValue] {
         personPrivate = PersonPrivate(privateDataV1_0.phone.getOrElse(""),
           Address(privateDataV1_0.city, privateDataV1_0.street, privateDataV1_0.country))
 
-        LoaderResult(frag, true)
+          success[PersonPrivateEntity]
 
-      case None => LoaderResult(frag, false)
+      case None => failure[PersonPrivateEntity]("invalid content")
     }
   }
 }
@@ -78,7 +74,7 @@ trait JsonPersonConnectionsLoader extends PersonLoader[JValue] {
     implicit val formats = DefaultFormats
     connections = personJson.\("connections").extract[List[Connection]]
 
-    LoaderResult(fragmentInReferredKernel[PersonConnectionsEntity](this), true)
+    success[PersonConnectionsEntity]
   }
 }
 
@@ -90,7 +86,7 @@ trait JsonPersonJobsLoader extends PersonLoader[JValue] {
     implicit val formats = DefaultFormats
     jobs = personJson.\("jobs").extract[List[Job]]
 
-    LoaderResult(fragmentInReferredKernel[PersonJobsEntity](this), true)
+    success[PersonJobsEntity]
   }
 }
 
@@ -99,7 +95,8 @@ trait JsonPersonAdStatsLoader extends PersonLoader[JValue] {
   this: PersonAdStatsEntity =>
 
   override def load(personJson: JValue) = {
-    LoaderResult(fragmentInReferredKernel[PersonAdStatsEntity](this), false)
+    //failure[PersonAdStatsEntity]("invalid content")
+    success[PersonAdStatsEntity]
   }
 }
 
