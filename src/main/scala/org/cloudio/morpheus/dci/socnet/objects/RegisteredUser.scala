@@ -12,69 +12,84 @@ import org.morpheus.Morpheus._
 
 // Pure data parts
 
-case class PersonPublic(nick: String, firstName: String, lastName: String, email: String)
+sealed trait PersonPublicData
+
+case class RegisteredUser(nick: String, firstName: String, lastName: String, email: Option[String]) extends PersonPublicData
+
+case class EmployeePersonalData(firstName: String, middleName: Option[String], lastName: String, title: String)
+
+case class Employee(employeeCode: String, personalData: EmployeePersonalData) extends PersonPublicData
 
 case class Address(city: String, street: String, country: String)
 
-case class PersonPrivate(phone: String, address: Address)
+sealed trait PersonPrivateData
 
-case class PersonPrivateV1_0(phone: Option[String], country: String, city: String, street: String)
+case class PersonPrivateV1_0(phone: Option[String], country: String, city: String, street: String) extends PersonPrivateData
+
+case class PersonPrivateV2_0(phone: String, address: Address) extends PersonPrivateData
 
 case class Connection(personNick: String, trusted: Boolean)
 
 case class Job(company: String, position: String, from: Date, until: Option[Date])
 
-case class Ad(title: String, url: String, date: Date, keywords: List[String])
+case class AdCampaign(title: String, url: String, date: Date, keywords: List[String])
 
 // Entity fragments holding the data parts
 
 @fragment
-trait PersonPrivateCommon {
-  this: PersonPrivateEntity or PersonPrivateV1_0Entity =>
+trait RegisteredUserEntity {
 
-  lazy val privateEntity: Either[PersonPrivateEntity, PersonPrivateV1_0Entity] = {
-    select[PersonPrivateEntity](this) match {
-      case Some(pp) => Left(pp)
-      case None =>
-        select[PersonPrivateV1_0Entity](this) match {
-          case Some(pp2) => Right(pp2)
-          case None => sys.error("no private fragment")
-        }
+  protected var regUser: RegisteredUser = _
+
+  def registeredUser = regUser
+}
+
+@fragment
+trait EmployeeEntity {
+
+  protected var emp: Employee = _
+
+  def employee = emp
+}
+
+@fragment
+trait PersonPublicCommon {
+
+  this: RegisteredUserEntity with \?[EmployeeEntity] =>
+
+  lazy val employeeData: Option[Employee] = for (pp <- select[EmployeeEntity](this)) yield pp.employee
+
+  def nick = registeredUser.nick
+
+  def firstName = registeredUser.firstName
+
+  def lastName = registeredUser.lastName
+
+  def email: Option[String] = registeredUser.email match {
+    case Some(em) => Some(em)
+    case None => employeeData match {
+      case Some(emp) => Some(s"${emp.employeeCode}@mycompany.com")
+      case None => None
     }
   }
 
-  def phone: Option[String] = privateEntity match {
-    case Left(pp) =>
-      val data: PersonPrivate = pp.privateData
-      Some(data.phone)
-    case Right(pp) =>
-      val data: PersonPrivateV1_0 = pp.privateData
-      data.phone
+}
+
+@fragment
+trait PersonPrivateCommon {
+  this: PersonPrivateV1_0Entity or PersonPrivateV2_0Entity =>
+
+  lazy val privateData: PersonPrivateData = {
+    List(
+      for (pp <- select[PersonPrivateV2_0Entity](this)) yield pp.privateData,
+      for (pp <- select[PersonPrivateV1_0Entity](this)) yield pp.privateData
+    ).find(_.isDefined).get.get
   }
-}
 
-@fragment
-trait PersonPublicEntity {
-
-  protected var personPublic: PersonPublic = _
-
-  def nick = personPublic.nick
-
-  def firstName = personPublic.firstName
-
-  def lastName = personPublic.lastName
-
-  def email = personPublic.email
-
-}
-
-
-@fragment
-trait PersonPrivateEntity {
-
-  protected var personPrivate: PersonPrivate = _
-
-  def privateData = personPrivate
+  def phone: Option[String] = privateData match {
+    case PersonPrivateV1_0(phone, _, _, _) => phone
+    case PersonPrivateV2_0(phone, _) => Some(phone)
+  }
 }
 
 @fragment
@@ -86,8 +101,16 @@ trait PersonPrivateV1_0Entity {
 }
 
 @fragment
+trait PersonPrivateV2_0Entity {
+
+  protected var personPrivate: PersonPrivateV2_0 = _
+
+  def privateData = personPrivate
+}
+
+@fragment
 trait PersonConnectionsEntity {
-  this: PersonPublicEntity =>
+  this: PersonPublicCommon =>
 
   protected var connections: List[Connection] = Nil
 
@@ -97,29 +120,29 @@ trait PersonConnectionsEntity {
 
   def isTrusted(nick: String): Boolean = trustedOnly.exists(_.personNick == nick)
 
-  def removeConnection(nick: String): Unit = connections = connections.filterNot(_.personNick == personPublic.nick)
+  def removeConnection(nick: String): Unit = connections = connections.filterNot(_.personNick == this.nick)
 
 }
 
 @fragment
 trait PersonJobsEntity {
-  this: PersonPublicEntity =>
+  this: PersonPublicCommon =>
 
   protected var jobs: List[Job] = Nil
 
-  def isColleague(other: PersonPublicEntity with PersonJobsEntity): Boolean = {
-    other.nick != personPublic.nick &&
+  def isColleague(other: PersonPublicCommon with PersonJobsEntity): Boolean = {
+    other.nick != this.nick &&
       other.jobs.exists(j1 => jobs.exists(j2 => j1.company == j2.company))
   }
 }
 
 @fragment
 trait PersonAdStatsEntity {
-  this: PersonPublicEntity =>
+  this: PersonPublicCommon =>
 
-  protected var seenAds: List[Ad] = Nil
+  protected var seenAds: List[AdCampaign] = Nil
 
-  def addSeenAd(ad: Ad): Unit = {
+  def addSeenAd(ad: AdCampaign): Unit = {
     seenAds ::= ad
   }
 }
@@ -148,7 +171,7 @@ case class Perception(network: String, subjectNick: String, subjectRole: String,
 
 @fragment
 trait NodeStats {
-  this: PersonPublicEntity =>
+  this: PersonPublicCommon =>
 
   protected var perceivedBy: List[Perception] = Nil
   protected var perceives: List[Perception] = Nil
@@ -177,10 +200,12 @@ trait NodeStats {
 // Morph Model
 object Person {
 
-  type PersonType = PersonPublicEntity with
-    \?[(PersonPrivateEntity or PersonPrivateV1_0Entity) with PersonPrivateCommon] with // the private data are not shown to anyone
-    PersonConnectionsEntity with
-    PersonJobsEntity with
+  type PersonType = PersonPublicCommon with
+    RegisteredUserEntity with
+    \?[EmployeeEntity] with
+    \?[(PersonPrivateV2_0Entity or PersonPrivateV1_0Entity) with PersonPrivateCommon] with
+    \?[PersonConnectionsEntity] with
+    \?[PersonJobsEntity] with
     \?[PersonAdStatsEntity]
   //with (Offline or Online) with NodeStats
 

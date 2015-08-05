@@ -56,7 +56,7 @@ trait AdAppender extends MailService {
 
 @dimension
 trait AdSelector {
-  def selectAd(message: Message): Ad
+  def selectAd(message: Message): AdCampaign
 }
 
 // Mocks
@@ -70,12 +70,12 @@ trait MailServiceMock extends MailService {
 
 @fragment
 trait AdSelectorMock extends AdSelector {
-  override def selectAd(message: Message) = Ad("Ad Mock", "http://abc", new Date, keywords = List("fun"))
+  override def selectAd(message: Message) = AdCampaign("Ad Mock", "http://abc", new Date, keywords = List("fun"))
 }
 
 @fragment
 trait AdSelectorMock2 extends AdSelector {
-  override def selectAd(message: Message) = Ad("Ad Mock2", "http://xyz", new Date, keywords = List("fun", "holiday"))
+  override def selectAd(message: Message) = AdCampaign("Ad Mock2", "http://xyz", new Date, keywords = List("fun", "holiday"))
 }
 
 // Assemblage
@@ -85,6 +85,7 @@ object MailServiceAsm {
   type ModelType = MailServiceMock
     with \?[AttachmentValidator]
     with \?[AdAppender with (AdSelectorMock or AdSelectorMock2)]
+    with $[PersonPrivateCommon]
 
   val mailServiceKernel = singleton_?[ModelType]
   val mailServiceFragments = tupled(mailServiceKernel)
@@ -103,18 +104,11 @@ object MailServiceAsm {
   }
 
   def main(args: Array[String]) {
-    //val t = mailServiceKernel.tupled
-
-    val user = PersonSample.personsAsMap("joe4")
-    println(user.!.myAlternative)
-    val alts = user.!.alternatives
-    val userPriv = asMorphOf[PersonPrivateCommon](user)
-    println(userPriv.myAlternative)
-    println(userPriv.phone)
+    val user = PersonSample.personsAsMap("joe1")
 
     //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "Bye", Nil)
     //val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", Nil)
-    val msg = Message(user.!.email, List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", List(Attachment("att1", Array[Byte](0,1,2), "mime1")))
+    val msg = Message(user.!.email.getOrElse("nobody@mycompany.com"), List("agata@gmail.com"), "Hello", "ByeASDSADSADASDSADASDSADASDASDASDSDAASDSA", List(Attachment("att1", Array[Byte](0,1,2), "mime1")))
 
     val mailRef: &[$[ModelType]] = user
     val mailKernel = *(mailRef, MailServiceStrategy(msg), mailServiceFragments)

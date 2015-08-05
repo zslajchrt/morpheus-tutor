@@ -55,16 +55,16 @@ trait Colleague {
 object Model {
 
   // Morph type
-  type RoleMorphType = PersonPublicEntity with PersonConnectionsEntity with PersonJobsEntity with $[Scene] with
-    (($[EndUser] with PersonPrivateEntity) or
+  type RoleMorphType = PersonPublicCommon with PersonConnectionsEntity with PersonJobsEntity with $[Scene] with
+    (($[EndUser] with PersonPrivateV2_0Entity) or
       $[Colleague])
 
   // Morph model
   val roleMorphModel = parseRef[RoleMorphType]
 
   // Faces
-  type EndUserFace = EndUser with PersonPublicEntity with PersonPrivateEntity with PersonConnectionsEntity with PersonJobsEntity with Scene
-  type ColleagueFace = Colleague with PersonPublicEntity with PersonConnectionsEntity with PersonJobsEntity with Scene
+  type EndUserFace = EndUser with PersonPublicCommon with PersonPrivateV2_0Entity with PersonConnectionsEntity with PersonJobsEntity with Scene
+  type ColleagueFace = Colleague with PersonPublicCommon with PersonConnectionsEntity with PersonJobsEntity with Scene
 
 }
 
@@ -98,7 +98,7 @@ class NetworkMapper(val sourceNetwork: Map[String, personMorphModel.Kernel]) ext
     selfKernelHolder.kernel
   }
 
-  private class SceneImpl(self: PersonPublicEntity with PersonJobsEntity) extends Scene {
+  private class SceneImpl(self: PersonPublicCommon with PersonJobsEntity) extends Scene {
 
     lazy val endUserKernel: &![EndUserFace] = targetNetwork(self.nick)
 

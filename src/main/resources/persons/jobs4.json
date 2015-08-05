@@ -1,0 +1,16 @@
+{
+  "userId": 4,
+  "jobs": [
+    {
+      "company": "Google",
+      "position": "CTO",
+      "from": "2012-02-04T00:00:00Z",
+      "until": "2014-01-04T00:00:00Z"
+    },
+    {
+      "company": "Amazon",
+      "position": "CEO",
+      "from": "2014-01-04T00:00:00Z"
+    }
+  ]
+}

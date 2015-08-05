@@ -1,0 +1,13 @@
+{
+  "userId": 1,
+  "connections": [
+    {
+      "personNick": "joe2",
+      "trusted": true
+    },
+    {
+      "personNick": "joe4",
+      "trusted": false
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "userId": 1,
+  "campaigns": [
+    {
+      "title": "Swimming Suite",
+      "url": "http://abc.com/swimmingSuite",
+      "date": "2002-01-01T00:00:00Z"
+    },
+    {
+      "title": "Perfect Beer",
+      "url": "http://pilsner.cz/gambrinus",
+      "date": "2003-01-01T00:00:00Z"
+    }
+  ]
+}

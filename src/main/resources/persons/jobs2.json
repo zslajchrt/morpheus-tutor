@@ -1,0 +1,16 @@
+{
+  "userId": 2,
+  "jobs": [
+    {
+      "company": "Amazon",
+      "position": "CFO",
+      "from": "2011-02-21T00:00:00Z",
+      "until": "2013-05-23T00:00:00Z"
+    },
+    {
+      "company": "CloudIO",
+      "position": "CTO",
+      "from": "2013-05-23T00:00:00Z"
+    }
+  ]
+}

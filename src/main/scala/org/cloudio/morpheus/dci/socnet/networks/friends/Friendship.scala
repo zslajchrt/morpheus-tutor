@@ -31,18 +31,18 @@ trait NonFriend {
 object Model {
 
   // Morph type
-  type PartyMorphType = PersonPublicEntity with PersonConnectionsEntity with $[PartyScene] with
-    (($[EndUser] with PersonPrivateEntity) or
-      ($[Friend] with PersonPrivateEntity) or
+  type PartyMorphType = PersonPublicCommon with PersonConnectionsEntity with $[PartyScene] with
+    (($[EndUser] with PersonPrivateV2_0Entity) or
+      ($[Friend] with PersonPrivateV2_0Entity) or
       $[NonFriend])
 
   // Morph model
   val partyMorphModel = parse[PartyMorphType](false, true)
 
   // Faces
-  type EndUserFace = EndUser with PersonPublicEntity with PersonPrivateEntity with PersonConnectionsEntity with PartyScene
-  type FriendFace = Friend with PersonPublicEntity with PersonPrivateEntity with PersonConnectionsEntity with PartyScene
-  type NonFriendFace = NonFriend with PersonPublicEntity with PersonConnectionsEntity with PartyScene
+  type EndUserFace = EndUser with PersonPublicCommon with PersonPrivateV2_0Entity with PersonConnectionsEntity with PartyScene
+  type FriendFace = Friend with PersonPublicCommon with PersonPrivateV2_0Entity with PersonConnectionsEntity with PartyScene
+  type NonFriendFace = NonFriend with PersonPublicCommon with PersonConnectionsEntity with PartyScene
 
 }
 
@@ -79,9 +79,9 @@ class NetworkMapper(val sourceNetwork: Map[String, personMorphModel.Kernel]) ext
     selfKernelHolder.kernel
   }
 
-  private class PartySceneImpl(person: PersonPublicEntity with PersonConnectionsEntity) extends PartyScene {
+  private class PartySceneImpl(person: PersonPublicCommon with PersonConnectionsEntity) extends PartyScene {
 
-    def findPerson(nick: String): Option[PersonPublicEntity with PersonConnectionsEntity] = {
+    def findPerson(nick: String): Option[PersonPublicCommon with PersonConnectionsEntity] = {
       for (pk <- targetNetwork.get(nick)) yield pk.~
     }
 
@@ -107,7 +107,7 @@ class NetworkMapper(val sourceNetwork: Map[String, personMorphModel.Kernel]) ext
 
     lazy val allContacts = friendKernels ::: nonFriendKernels
 
-    def isFriend(p1: PersonPublicEntity with PersonConnectionsEntity, p2: PersonPublicEntity with PersonConnectionsEntity): Boolean = {
+    def isFriend(p1: PersonPublicCommon with PersonConnectionsEntity, p2: PersonPublicCommon with PersonConnectionsEntity): Boolean = {
       p1.isTrusted(p2.nick) && p2.isTrusted(p1.nick)
     }
 

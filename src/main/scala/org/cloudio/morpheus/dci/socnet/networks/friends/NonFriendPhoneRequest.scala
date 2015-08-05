@@ -1,6 +1,6 @@
 package org.cloudio.morpheus.dci.socnet.networks.friends
 
-import org.cloudio.morpheus.dci.socnet.objects.{PersonConnectionsEntity, PersonPublicEntity, PersonPrivateEntity}
+import org.cloudio.morpheus.dci.socnet.objects.{PersonConnectionsEntity, PersonPublicCommon, PersonPrivateV2_0Entity}
 import org.cloudio.morpheus.dci.socnet.networks._
 import org.morpheus.Morpheus._
 import org.morpheus._
@@ -17,7 +17,7 @@ trait PhoneHolder {
 
   def myPhone(): Option[String]
 
-  def mediatePhoneRequest(phoneHolder: PhoneHolder with PersonPublicEntity with PersonConnectionsEntity, onBehalfOf: PersonPublicEntity, path: List[PersonPublicEntity]): Option[String]
+  def mediatePhoneRequest(phoneHolder: PhoneHolder with PersonPublicCommon with PersonConnectionsEntity, onBehalfOf: PersonPublicCommon, path: List[PersonPublicCommon]): Option[String]
 
 }
 
@@ -25,7 +25,7 @@ trait PhoneHolder {
 @fragment
 trait Requester {
 
-  this: EndUser with PhoneHolderScene with PersonPublicEntity with PersonConnectionsEntity with PersonPrivateEntity =>
+  this: EndUser with PhoneHolderScene with PersonPublicCommon with PersonConnectionsEntity with PersonPrivateV2_0Entity =>
 
   def requestPhoneOf(phoneOwnerNick: String): Option[String] = {
     for (phoneOwner <- allMyContactsAsPhoneHolders.find(_.nick == phoneOwnerNick);
@@ -37,11 +37,11 @@ trait Requester {
 // This trait is bound to NonFriend
 @fragment
 trait NonFriendPhoneHolder extends PhoneHolder {
-  this: NonFriend with PersonPublicEntity with PersonConnectionsEntity with PhoneHolderScene =>
+  this: NonFriend with PersonPublicCommon with PersonConnectionsEntity with PhoneHolderScene =>
 
   override def myPhone(): Option[String] = None
 
-  override def mediatePhoneRequest(phoneHolder: PhoneHolder with PersonPublicEntity with PersonConnectionsEntity, onBehalfOf: PersonPublicEntity, path: List[PersonPublicEntity]): Option[String] = {
+  override def mediatePhoneRequest(phoneHolder: PhoneHolder with PersonPublicCommon with PersonConnectionsEntity, onBehalfOf: PersonPublicCommon, path: List[PersonPublicCommon]): Option[String] = {
     if (isTrusted(path.head.nick))
       traverseContactsForPhone(phoneHolder, onBehalfOf, path)
     else
@@ -52,11 +52,11 @@ trait NonFriendPhoneHolder extends PhoneHolder {
 // This trait is bound to Friend
 @fragment
 trait FriendPhoneHolder extends PhoneHolder {
-  this: Friend with PersonPublicEntity with PersonPrivateEntity with PersonConnectionsEntity with PhoneHolderScene =>
+  this: Friend with PersonPublicCommon with PersonPrivateV2_0Entity with PersonConnectionsEntity with PhoneHolderScene =>
 
   override def myPhone(): Option[String] = Some(personPrivate.phone)
 
-  override def mediatePhoneRequest(phoneHolder: PhoneHolder with PersonPublicEntity with PersonConnectionsEntity, onBehalfOf: PersonPublicEntity, path: List[PersonPublicEntity]): Option[String] = {
+  override def mediatePhoneRequest(phoneHolder: PhoneHolder with PersonPublicCommon with PersonConnectionsEntity, onBehalfOf: PersonPublicCommon, path: List[PersonPublicCommon]): Option[String] = {
     if (phoneHolder.nick == this.nick) {
       if (examineRequester(onBehalfOf)) {
         Some(personPrivate.phone)
@@ -68,7 +68,7 @@ trait FriendPhoneHolder extends PhoneHolder {
     }
   }
 
-  protected def examineRequester(requester: PersonPublicEntity): Boolean = {
+  protected def examineRequester(requester: PersonPublicCommon): Boolean = {
     true
   }
 
@@ -77,25 +77,25 @@ trait FriendPhoneHolder extends PhoneHolder {
 // This scene is a view that transforms the friendship roles to phone holders
 @fragment
 trait PhoneHolderScene {
-  this: PartyScene with PersonPublicEntity =>
+  this: PartyScene with PersonPublicCommon =>
 
-  lazy val myFriendsAsPhoneHolders: List[FriendPhoneHolder with PersonPublicEntity with PersonConnectionsEntity] = {
+  lazy val myFriendsAsPhoneHolders: List[FriendPhoneHolder with PersonPublicCommon with PersonConnectionsEntity] = {
     friendKernels.map(fk => {
-      val frk: &[$[FriendPhoneHolder] with $[PhoneHolderScene] with PersonPublicEntity with PersonConnectionsEntity] = *(fk)
+      val frk: &[$[FriendPhoneHolder] with $[PhoneHolderScene] with PersonPublicCommon with PersonConnectionsEntity] = *(fk)
       *(frk, single[FriendPhoneHolder], single[PhoneHolderScene]).~
     })
   }
 
-  lazy val myNonFriendsAsPhoneHolders: List[NonFriendPhoneHolder with PersonPublicEntity with PersonConnectionsEntity] = {
+  lazy val myNonFriendsAsPhoneHolders: List[NonFriendPhoneHolder with PersonPublicCommon with PersonConnectionsEntity] = {
     nonFriendKernels.map(fk => {
-      val frk: &[$[NonFriendPhoneHolder] with $[PhoneHolderScene] with PersonPublicEntity with PersonConnectionsEntity] = *(fk)
+      val frk: &[$[NonFriendPhoneHolder] with $[PhoneHolderScene] with PersonPublicCommon with PersonConnectionsEntity] = *(fk)
       *(frk, single[NonFriendPhoneHolder], single[PhoneHolderScene]).~
     })
   }
 
   lazy val allMyContactsAsPhoneHolders = myFriendsAsPhoneHolders ::: myNonFriendsAsPhoneHolders
 
-  protected def traverseContactsForPhone(phoneHolder: PhoneHolder with PersonPublicEntity with PersonConnectionsEntity, onBehalfOf: PersonPublicEntity, path: List[PersonPublicEntity]): Option[String] = {
+  protected def traverseContactsForPhone(phoneHolder: PhoneHolder with PersonPublicCommon with PersonConnectionsEntity, onBehalfOf: PersonPublicCommon, path: List[PersonPublicCommon]): Option[String] = {
     if (path.exists(_.nick == this.nick)) {
       None
     } else {

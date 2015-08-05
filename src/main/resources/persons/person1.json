@@ -1,39 +1,17 @@
 {
-   "public": {
-     "nick": "joe1",
-     "firstName": "Joe1",
-     "lastName": "Doe1",
-     "email": "joe1@gmail.com"
-   },
-   "private": {
-     "phone": "0420-100",
-     "address": {
-       "city": "Prague",
-       "street": "Moskevska",
-       "country": "CZ"
-     }
-   },
-   "connections": [
-     {
-       "personNick": "joe2",
-       "trusted": true
-     },
-     {
-       "personNick": "joe4",
-       "trusted": false
-     }
-   ],
-   "jobs": [
-     {
-       "company": "Amaio",
-       "position": "Developer",
-       "from": "2002-01-01T00:00:00Z",
-       "until": "2012-04-23T00:00:00Z"
-     },
-     {
-       "company": "CloudIO",
-       "position": "CEO",
-       "from": "2012-04-23T00:00:00Z"
-     }
-   ]
+  "userId": 1,
+  "public": {
+    "nick": "joe1",
+    "firstName": "Joe1",
+    "lastName": "Doe1",
+    "email": "joe1@gmail.com"
+  },
+  "private": {
+    "phone": "0420-100",
+    "address": {
+      "city": "Prague",
+      "street": "Moskevska",
+      "country": "CZ"
+    }
+  }
 }
