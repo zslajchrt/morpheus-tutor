@@ -63,29 +63,29 @@ trait PersonPublicCommon {
 
   this: RegisteredUserEntity or EmployeeEntity =>
 
-  lazy val employeeData: PersonPublic = {
+  lazy val personData: PersonPublic = {
     List(
       for (pp <- select[RegisteredUserEntity](this)) yield pp.registeredUser.`public`,
       for (pp <- select[EmployeeEntity](this)) yield pp.employee
     ).find(_.isDefined).get.get
   }
 
-  def nick = employeeData match {
+  def nick = personData match {
     case RegisteredUserPublic(n, _, _, _) => n
     case Employee(code, _, _, _) => code
   }
 
-  def firstName = employeeData match {
+  def firstName = personData match {
     case RegisteredUserPublic(_, fn, _, _) => fn
     case Employee(_, _, _, EmployeePersonalData(fn, _, _, _)) => fn
   }
 
-  def lastName = employeeData match {
+  def lastName = personData match {
     case RegisteredUserPublic(_, _, ln, _) => ln
     case Employee(_, _, _, EmployeePersonalData(_, _, ln, _)) => ln
   }
 
-  def email: Option[String] = employeeData match {
+  def email: Option[String] = personData match {
     case RegisteredUserPublic(_, _, _, em) => em
     case Employee(code, _, _, _) => Some(s"$code@thebigcompany.com")
   }
@@ -223,12 +223,14 @@ object PersonModel {
     \?[PersonAdStatsEntity]
   //with (Offline or Online) with NodeStats
 
+
   val personMorphModel = parse[PersonType](true)
 
   //  val statusSwitch: (Option[personMorphModel.MutableLUB]) => Option[Int] =
   //    for (person <- _) yield {
   //      if (person.subjectPerceptions.isEmpty) 0 else 1
   //    }
+
 
   def newPerson(strategy: MorphingStrategy[personMorphModel.Model]): personMorphModel.Kernel = {
     singleton(personMorphModel, strategy)
