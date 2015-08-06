@@ -1,9 +1,13 @@
 {
-  "userId": 4,
   "public": {
     "nick": "joe4",
     "firstName": "Joe4",
     "lastName": "Doe4",
     "email": "joe4@gmail.com"
+  },
+  "license": {
+    "premium": true,
+    "validFrom": "2015-02-21T00:00:00Z",
+    "validTo": "2016-02-21T00:00:00Z"
   }
 }

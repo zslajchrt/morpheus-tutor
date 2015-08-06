@@ -1,20 +1,22 @@
 package org.cloudio.morpheus.dci.socnet.objects
 
-import org.json4s.JsonAST.{JNothing, JArray, JObject}
-import org.json4s.{Formats, DefaultFormats, JString, JValue}
+import java.util.Date
+
+import org.json4s.JsonAST.{JArray, JNothing}
 import org.json4s.native.JsonMethods
-import org.morpheus._
+import org.json4s.{DefaultFormats, JValue}
+import org.morpheus.FragmentValidator._
 import org.morpheus.Morpheus._
-import FragmentValidator._
+import org.morpheus._
 
 /**
  * Created by zslajchrt on 21/07/15.
  */
 
 @dimension
-trait PersonLoader[T] {
+trait FragmentLoader[F] {
 
-  def load: ValidationResult[_]
+  def load: ValidationResult[F]
 }
 
 //object PersonLoader {
@@ -42,14 +44,14 @@ trait PersonLoader[T] {
 //}
 
 @fragment
-trait JsonRegisteredUserLoader extends PersonLoader[JValue] {
+trait RegisteredUserLoader extends FragmentLoader[RegisteredUserEntity] {
   this: UserProtodata with RegisteredUserEntity =>
 
   override def load = {
     implicit val formats = DefaultFormats
-    registeredUserJson.\("public").extractOpt[RegisteredUser] match {
+    this.registeredUserJson.extractOpt[RegisteredUser] match {
       case Some(ru) =>
-        regUser = ru
+        this.regUser = ru
         success[RegisteredUserEntity]
       case None =>
         failure[RegisteredUserEntity]("invalid content")
@@ -57,32 +59,15 @@ trait JsonRegisteredUserLoader extends PersonLoader[JValue] {
   }
 }
 
-
 @fragment
-trait JsonEmployeeLoader extends PersonLoader[JValue] {
-  this: UserProtodata with EmployeeEntity =>
-
-  override def load = {
-    implicit val formats = DefaultFormats
-    employeeJson.\("employee").extractOpt[Employee] match {
-      case Some(empData) =>
-        emp = empData
-        success[EmployeeEntity]
-      case None =>
-        failure[EmployeeEntity]("invalid content")
-    }
-  }
-}
-
-@fragment
-trait JsonPersonPrivateLoaderV1_0 extends PersonLoader[JValue] {
+trait JsonPersonPrivateLoaderV1_0 extends FragmentLoader[PersonPrivateV1_0Entity] {
   this: UserProtodata with PersonPrivateV1_0Entity =>
 
   override def load = {
     implicit val formats = DefaultFormats
-    registeredUserJson.\("private").extractOpt[PersonPrivateV1_0] match {
+    this.registeredUserJson.\("private").extractOpt[PersonPrivateV1_0] match {
       case Some(privateDataV1_0) =>
-        personPrivateV1_0 = privateDataV1_0
+        this.personPrivateV1_0 = privateDataV1_0
         success[PersonPrivateV1_0Entity]
       case None => failure[PersonPrivateV1_0Entity]("invalid content")
     }
@@ -90,14 +75,14 @@ trait JsonPersonPrivateLoaderV1_0 extends PersonLoader[JValue] {
 }
 
 @fragment
-trait JsonPersonPrivateLoaderV2_0 extends PersonLoader[JValue] {
+trait JsonPersonPrivateLoaderV2_0 extends FragmentLoader[PersonPrivateV2_0Entity] {
   this: UserProtodata with PersonPrivateV2_0Entity =>
 
   override def load = {
     implicit val formats = DefaultFormats
-    registeredUserJson.\("private").extractOpt[PersonPrivateV2_0] match {
+    this.registeredUserJson.\("private").extractOpt[PersonPrivateV2_0] match {
       case Some(privateData) =>
-        personPrivate = privateData
+        this.personPrivate = privateData
         success[PersonPrivateV2_0Entity]
 
       case None => failure[PersonPrivateV2_0Entity]("invalid content")
@@ -107,7 +92,23 @@ trait JsonPersonPrivateLoaderV2_0 extends PersonLoader[JValue] {
 }
 
 @fragment
-trait JsonPersonConnectionsLoader extends PersonLoader[JValue] {
+trait EmployeeLoader extends FragmentLoader[EmployeeEntity] {
+  this: UserProtodata with EmployeeEntity =>
+
+  override def load = {
+    implicit val formats = DefaultFormats
+    this.employeeJson.\("employee").extractOpt[Employee] match {
+      case Some(empData) =>
+        this.emp = empData
+        success[EmployeeEntity]
+      case None =>
+        failure[EmployeeEntity]("invalid content")
+    }
+  }
+}
+
+@fragment
+trait PersonConnectionsLoader extends FragmentLoader[PersonConnectionsEntity] {
   this: UserProtodata with PersonConnectionsEntity =>
 
   override def load = {
@@ -115,9 +116,9 @@ trait JsonPersonConnectionsLoader extends PersonLoader[JValue] {
     if (connectionsJson == JNothing) {
       failure[PersonConnectionsEntity]("invalid content")
     } else
-      connectionsJson.\("connections").extractOpt[List[Connection]] match {
+      this.connectionsJson.\("connections").extractOpt[List[Connection]] match {
         case Some(cons) =>
-          connections = cons
+          this.connections = cons
           success[PersonConnectionsEntity]
         case None =>
           failure[PersonConnectionsEntity]("invalid content")
@@ -127,7 +128,7 @@ trait JsonPersonConnectionsLoader extends PersonLoader[JValue] {
 }
 
 @fragment
-trait JsonPersonJobsLoader extends PersonLoader[JValue] {
+trait PersonJobsLoader extends FragmentLoader[PersonJobsEntity] {
   this: UserProtodata with PersonJobsEntity =>
 
   override def load = {
@@ -135,9 +136,9 @@ trait JsonPersonJobsLoader extends PersonLoader[JValue] {
     if (jobsJson == JNothing) {
       failure[PersonJobsEntity]("invalid content")
     } else
-      jobsJson.\("jobs").extractOpt[List[Job]] match {
+      this.jobsJson.\("jobs").extractOpt[List[Job]] match {
         case Some(j) =>
-          jobs = j
+          this.jobs = j
           success[PersonJobsEntity]
         case None =>
           failure[PersonJobsEntity]("invalid content")
@@ -146,17 +147,17 @@ trait JsonPersonJobsLoader extends PersonLoader[JValue] {
 }
 
 @fragment
-trait JsonPersonAdStatsLoader extends PersonLoader[JValue] {
+trait PersonAdStatsLoader extends FragmentLoader[PersonAdStatsEntity] {
   this: UserProtodata with PersonAdStatsEntity =>
 
   override def load = {
     implicit val formats = DefaultFormats
-    if (adCampaignJson == JNothing) {
+    if (adCampaignsJson == JNothing) {
       failure[PersonAdStatsEntity]("invalid content")
     } else
-      adCampaignJson.\("campaigns").extractOpt[List[AdCampaign]] match {
+      this.adCampaignsJson.\("campaigns").extractOpt[List[AdCampaign]] match {
         case Some(a) =>
-          seenAds = a
+          this.seenAds = a
           success[PersonAdStatsEntity]
         case None =>
           failure[PersonAdStatsEntity]("invalid content")
@@ -171,19 +172,21 @@ trait UserProtodata {
 
   def employeeJson: JValue
 
-  def adCampaignJson: JValue
-
   def jobsJson: JValue
 
   def connectionsJson: JValue
 
-  def initSources(userId: Int)
+  def adCampaignsJson: JValue
+
+  def clicks(from: Date, to: Date): Iterator[JValue]
+
+  def initSources(userId: String)
 }
 
 @fragment
 trait UserProtodataMock extends UserProtodata {
 
-  private[this] var userId: Int = _
+  private[this] var userId: String = _
 
   private def loadJson(path: String): JValue = {
     getClass.getClassLoader.getResourceAsStream(path) match {
@@ -196,33 +199,39 @@ trait UserProtodataMock extends UserProtodata {
 
   lazy val employeeJson: JValue = loadJson(s"persons/employee$userId.json")
 
-  lazy val adCampaignJson: JValue = loadJson(s"persons/campaigns$userId.json")
+  lazy val adCampaignsJson: JValue = loadJson(s"persons/campaigns$userId.json")
 
   lazy val connectionsJson: JValue = loadJson(s"persons/connections$userId.json")
 
   lazy val jobsJson: JValue = loadJson(s"persons/jobs$userId.json")
 
-  // clickstream... todo
+  override def clicks(from: Date, to: Date): Iterator[JValue] = {
+    val streamJson = loadJson(s"persons/clicks$userId.json")
+    streamJson.\("stream") match {
+      case JArray(cl) => cl.iterator
+      case _ => Iterator.empty
+    }
+  }
 
-  override def initSources(userId: Int): Unit = {
+  override def initSources(userId: String): Unit = {
     this.userId = userId
   }
 }
 
 object JsonLoaders {
 
-  type PersonLoaders = $[(JsonRegisteredUserLoader or
-    JsonEmployeeLoader or
+  type PersonLoaders = $[(RegisteredUserLoader or
+    EmployeeLoader or
     JsonPersonPrivateLoaderV1_0 or
     JsonPersonPrivateLoaderV2_0 or
-    JsonPersonConnectionsLoader or
-    JsonPersonJobsLoader or
-    JsonPersonAdStatsLoader) with UserProtodataMock]
+    PersonConnectionsLoader or
+    PersonJobsLoader or
+    PersonAdStatsLoader) with UserProtodataMock]
 
   //
   //  type PersonLoaders = $[JsonEmployeeLoader with UserProtodataMock]
 
-  def load(pl: &[PersonLoaders], userId: Int): Set[Int] = {
+  def load(pl: &[PersonLoaders], userId: String): Set[Int] = {
     val loaderFactoriesKernel = singleton_?[$[PersonLoaders]]
     val loaderFactories = tupled(loaderFactoriesKernel)
     val plKernel = *(pl, loaderFactories)
@@ -240,21 +249,106 @@ object JsonLoaders {
 
 object PersonSample {
 
-  import Person._
+  import PersonModel._
 
-  def loadPerson(userId: Int): personMorphModel.Kernel = {
+  def loadPerson(userId: String): personMorphModel.Kernel = {
     var failedFragments: Option[Set[Int]] = None
-    val p = newPerson(MaskExplicitStrategy(rootStrategy(Person.personMorphModel), true, () => failedFragments))
+    val p = newPerson(MaskExplicitStrategy(rootStrategy(PersonModel.personMorphModel), true, () => failedFragments))
 
     failedFragments = Some(JsonLoaders.load(p, userId))
 
     p
   }
 
-  val persons = List(loadPerson(1), loadPerson(2), loadPerson(3), loadPerson(4))
+  val persons = List(loadPerson("1"), loadPerson("2"), loadPerson("3"), loadPerson("4"), loadPerson("5"))
   val personsAsMap = persons.map(pk => (pk.~.nick, pk)).toMap
 
-  println(personsAsMap.keys)
+  def main(args: Array[String]) {
+    val regUserKernel = singleton[RegisteredUserEntity]
+    println(regUserKernel.~.registeredUser)
+
+    {
+      val regUserLoaderRef: &[$[RegisteredUserLoader with UserProtodataMock]] = regUserKernel
+      val regUserLoaderKernel = *(regUserLoaderRef, single[RegisteredUserLoader], single[UserProtodataMock])
+      regUserLoaderKernel.~.initSources("4")
+      regUserLoaderKernel.~.load match {
+        case Failure(_, reason) =>
+          sys.error(s"Cannot load registered user: $reason")
+        case Success(_) =>
+          println(regUserKernel.~.registeredUser)
+
+      }
+
+    }
+    //////
+    {
+      val empKernel = singleton[EmployeeEntity]
+      val empLoaderRef: &[$[EmployeeLoader with UserProtodataMock]] = empKernel
+      // ...
+    }
+
+    //////
+    {
+      val regUserOrEmpKernel = singleton[RegisteredUserEntity or EmployeeEntity]
+      val regUserOrEmpLoaderRef: &[$[(RegisteredUserLoader or EmployeeLoader) with UserProtodataMock]] = regUserOrEmpKernel
+      val regUserOrEmpLoaderKernel = *(regUserOrEmpLoaderRef, single[RegisteredUserLoader], single[EmployeeLoader],
+        single[UserProtodataMock])
+      regUserOrEmpLoaderKernel.~.initSources("5")
+
+      for (loader <- regUserOrEmpLoaderKernel) {
+        println(loader.myAlternative)
+        loader.load
+      }
+
+      val regUserEnt = asMorphOf[RegisteredUserEntity](regUserOrEmpKernel)
+      println(regUserEnt.registeredUser)
+      val empEnt = asMorphOf[EmployeeEntity](regUserOrEmpKernel)
+      println(empEnt.employee)
+    }
+
+    {
+      //////
+      val regUserOrEmpModel = parse[RegisteredUserEntity or EmployeeEntity](true)
+      var failedFragments: Option[Set[Int]] = None
+      val morphStrategy = MaskExplicitStrategy(rootStrategy(regUserOrEmpModel), true, () => failedFragments)
+      val regUserOrEmpKernel = singleton(regUserOrEmpModel, morphStrategy)
+
+      val regUserOrEmpLoaderRef: &[$[(RegisteredUserLoader or EmployeeLoader) with UserProtodataMock]] = regUserOrEmpKernel
+      val regUserOrEmpLoaderKernel = *(regUserOrEmpLoaderRef, single[RegisteredUserLoader], single[EmployeeLoader],
+        single[UserProtodataMock])
+      regUserOrEmpLoaderKernel.~.initSources("6")
+
+      //////
+      failedFragments = Some((for (loader <- regUserOrEmpLoaderKernel;
+                                   loaderResult = loader.load
+                                   if !loaderResult.succeeded;
+                                   frag <- loaderResult.fragment) yield frag.index).toSet)
+
+      //      val regUserEnt = asMorphOf[RegisteredUserEntity](regUserOrEmpKernel)
+      //      println(regUserEnt.registeredUser)
+      //      val empEnt = asMorphOf[EmployeeEntity](regUserOrEmpKernel)
+      //      println(empEnt.employee)
+
+      try {
+        regUserOrEmpKernel.~.remorph
+        select[RegisteredUserEntity](regUserOrEmpKernel.~) match {
+          case Some(regUserEnt) =>
+            println(regUserEnt.registeredUser)
+          case None =>
+            select[EmployeeEntity](regUserOrEmpKernel.~) match {
+              case Some(empEnt) => println(empEnt.employee)
+              case None => require(false)
+            }
+        }
+      }
+      catch {
+        case ae: NoViableAlternativeException =>
+          println("Cannot load registered user or employee")
+      }
+
+    }
+
+  }
 
   //  def main(args: Array[String]) {
   //    val j = JsonMethods.parse(getClass.getClassLoader.getResourceAsStream(s"persons/person1.json"))

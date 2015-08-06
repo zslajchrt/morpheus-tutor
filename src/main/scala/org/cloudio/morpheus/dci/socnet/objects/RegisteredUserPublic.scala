@@ -12,13 +12,19 @@ import org.morpheus.Morpheus._
 
 // Pure data parts
 
-sealed trait PersonPublicData
+//sealed trait Person
+sealed trait PersonPublic
 
-case class RegisteredUser(nick: String, firstName: String, lastName: String, email: Option[String]) extends PersonPublicData
+case class RegisteredUserPublic(nick: String, firstName: String, lastName: String, email: Option[String]) extends PersonPublic
+
+case class RegisteredUserLicense(premium: Boolean, validFrom: Date, validTo: Date)
+
+case class RegisteredUser(`public`: RegisteredUserPublic, license: Option[RegisteredUserLicense])
+
 
 case class EmployeePersonalData(firstName: String, middleName: Option[String], lastName: String, title: String)
 
-case class Employee(employeeCode: String, personalData: EmployeePersonalData) extends PersonPublicData
+case class Employee(employeeCode: String, position: String, department: String, personalData: EmployeePersonalData) extends PersonPublic
 
 case class Address(city: String, street: String, country: String)
 
@@ -55,22 +61,33 @@ trait EmployeeEntity {
 @fragment
 trait PersonPublicCommon {
 
-  this: RegisteredUserEntity with \?[EmployeeEntity] =>
+  this: RegisteredUserEntity or EmployeeEntity =>
 
-  lazy val employeeData: Option[Employee] = for (pp <- select[EmployeeEntity](this)) yield pp.employee
+  lazy val employeeData: PersonPublic = {
+    List(
+      for (pp <- select[RegisteredUserEntity](this)) yield pp.registeredUser.`public`,
+      for (pp <- select[EmployeeEntity](this)) yield pp.employee
+    ).find(_.isDefined).get.get
+  }
 
-  def nick = registeredUser.nick
+  def nick = employeeData match {
+    case RegisteredUserPublic(n, _, _, _) => n
+    case Employee(code, _, _, _) => code
+  }
 
-  def firstName = registeredUser.firstName
+  def firstName = employeeData match {
+    case RegisteredUserPublic(_, fn, _, _) => fn
+    case Employee(_, _, _, EmployeePersonalData(fn, _, _, _)) => fn
+  }
 
-  def lastName = registeredUser.lastName
+  def lastName = employeeData match {
+    case RegisteredUserPublic(_, _, ln, _) => ln
+    case Employee(_, _, _, EmployeePersonalData(_, _, ln, _)) => ln
+  }
 
-  def email: Option[String] = registeredUser.email match {
-    case Some(em) => Some(em)
-    case None => employeeData match {
-      case Some(emp) => Some(s"${emp.employeeCode}@mycompany.com")
-      case None => None
-    }
+  def email: Option[String] = employeeData match {
+    case RegisteredUserPublic(_, _, _, em) => em
+    case Employee(code, _, _, _) => Some(s"$code@thebigcompany.com")
   }
 
 }
@@ -166,7 +183,6 @@ trait Online extends Status {
 
 }
 
-
 case class Perception(network: String, subjectNick: String, subjectRole: String, objectNick: String, objectRole: String)
 
 @fragment
@@ -198,12 +214,10 @@ trait NodeStats {
 }
 
 // Morph Model
-object Person {
+object PersonModel {
 
-  type PersonType = PersonPublicCommon with
-    RegisteredUserEntity with
-    \?[EmployeeEntity] with
-    \?[(PersonPrivateV2_0Entity or PersonPrivateV1_0Entity) with PersonPrivateCommon] with
+  type PersonType = PersonPublicCommon with (RegisteredUserEntity or EmployeeEntity) with
+    \?[PersonPrivateCommon with (PersonPrivateV2_0Entity or PersonPrivateV1_0Entity)] with
     \?[PersonConnectionsEntity] with
     \?[PersonJobsEntity] with
     \?[PersonAdStatsEntity]

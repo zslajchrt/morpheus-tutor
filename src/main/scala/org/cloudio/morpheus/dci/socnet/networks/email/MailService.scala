@@ -2,7 +2,7 @@ package org.cloudio.morpheus.dci.socnet.networks.email
 
 import java.util.Date
 
-import org.cloudio.morpheus.dci.socnet.objects.Person.PersonType
+import org.cloudio.morpheus.dci.socnet.objects.PersonModel.PersonType
 import org.cloudio.morpheus.dci.socnet.objects._
 import org.morpheus._
 import org.morpheus.Morpheus._

@@ -1,9 +1,11 @@
 {
-  "userId": 1,
   "employee": {
       "employeeCode": "xyz9000",
+      "position": "Developer",
+      "department": "R&D",
       "personalData": {
         "firstName": "Joe1",
+        "middleName": "D.",
         "lastName": "Doe1",
         "title": "Mr."
       }
