@@ -13,28 +13,30 @@ import org.morpheus.Morpheus._
 // Pure data parts
 
 //sealed trait Person
-sealed trait PersonPublic
-
-case class RegisteredUserPublic(nick: String, firstName: String, lastName: String, email: Option[String]) extends PersonPublic
+case class RegisteredUserPublic(nick: String, firstName: String, lastName: String, email: Option[String], male: Option[Boolean], birthDate: Option[Date])
 
 case class RegisteredUserLicense(premium: Boolean, validFrom: Date, validTo: Date)
 
 case class RegisteredUser(`public`: RegisteredUserPublic, license: Option[RegisteredUserLicense])
 
+case class EmployeePersonalData(firstName: String, middleName: Option[String], lastName: String, title: String, isMale: Boolean, birth: Date)
 
-case class EmployeePersonalData(firstName: String, middleName: Option[String], lastName: String, title: String)
-
-case class Employee(employeeCode: String, position: String, department: String, personalData: EmployeePersonalData) extends PersonPublic
+case class Employee(employeeCode: String, position: String, department: String, personalData: EmployeePersonalData)
 
 case class Address(city: String, street: String, country: String)
 
 sealed trait PersonPrivateData
 
-case class PersonPrivateV1_0(phone: Option[String], country: String, city: String, street: String) extends PersonPrivateData
+//case class PersonPrivateV1_0(phone: Option[String], country: String, city: String, street: String) extends PersonPrivateData
+//
+//case class PersonPrivateV2_0(phone: String, address: Address) extends PersonPrivateData
 
-case class PersonPrivateV2_0(phone: String, address: Address) extends PersonPrivateData
+case class Connection(userId: String)
 
-case class Connection(personNick: String, trusted: Boolean)
+case class MarketingPersonaDemographics(ageGroup: Option[Int], gender: Option[Int], salaryGroup: Option[Int], location: Option[Int], education: Option[Int], family: Option[Int])
+case class MarketingPersonaProfessional(field: Option[Int], position: Option[Int], experience: Option[Int])
+case class MarketingPersonaHobby(fields: List[Int])
+case class MarketingPersona(demographics: Option[MarketingPersonaDemographics], professional: Option[MarketingPersonaProfessional], hobbies: Option[MarketingPersonaHobby])
 
 case class Job(company: String, position: String, from: Date, until: Option[Date])
 
@@ -58,72 +60,90 @@ trait EmployeeEntity {
   def employee = emp
 }
 
-@fragment
+@dimension
 trait PersonPublicCommon {
+  def nick: String
 
-  this: RegisteredUserEntity or EmployeeEntity =>
+  def firstName: String
 
-  lazy val personData: PersonPublic = {
-    List(
-      for (pp <- select[RegisteredUserEntity](this)) yield pp.registeredUser.`public`,
-      for (pp <- select[EmployeeEntity](this)) yield pp.employee
-    ).find(_.isDefined).get.get
-  }
+  def lastName: String
 
-  def nick = personData match {
-    case RegisteredUserPublic(n, _, _, _) => n
-    case Employee(code, _, _, _) => code
-  }
+  def email: Option[String]
 
-  def firstName = personData match {
-    case RegisteredUserPublic(_, fn, _, _) => fn
-    case Employee(_, _, _, EmployeePersonalData(fn, _, _, _)) => fn
-  }
+  def isMale: Option[Boolean]
 
-  def lastName = personData match {
-    case RegisteredUserPublic(_, _, ln, _) => ln
-    case Employee(_, _, _, EmployeePersonalData(_, _, ln, _)) => ln
-  }
-
-  def email: Option[String] = personData match {
-    case RegisteredUserPublic(_, _, _, em) => em
-    case Employee(code, _, _, _) => Some(s"$code@thebigcompany.com")
-  }
-
+  def birthDate: Option[Date]
 }
 
 @fragment
-trait PersonPrivateCommon {
-  this: PersonPrivateV1_0Entity or PersonPrivateV2_0Entity =>
+trait RegisteredUserPublicCommon extends PersonPublicCommon {
 
-  lazy val privateData: PersonPrivateData = {
-    List(
-      for (pp <- select[PersonPrivateV2_0Entity](this)) yield pp.privateData,
-      for (pp <- select[PersonPrivateV1_0Entity](this)) yield pp.privateData
-    ).find(_.isDefined).get.get
-  }
+  this: RegisteredUserEntity =>
 
-  def phone: Option[String] = privateData match {
-    case PersonPrivateV1_0(phone, _, _, _) => phone
-    case PersonPrivateV2_0(phone, _) => Some(phone)
-  }
+  def nick = regUser.`public`.nick
+
+  def firstName = regUser.`public`.firstName
+
+  def lastName = regUser.`public`.firstName
+
+  def email = regUser.`public`.email
+
+  def isMale = regUser.`public`.male
+
+  def birthDate = regUser.`public`.birthDate
 }
+
 
 @fragment
-trait PersonPrivateV1_0Entity {
+trait EmployeePublicCommon extends PersonPublicCommon {
 
-  protected var personPrivateV1_0: PersonPrivateV1_0 = _
+  this: EmployeeEntity =>
 
-  def privateData = personPrivateV1_0
+  def nick = emp.employeeCode
+
+  def firstName = emp.personalData.firstName
+
+  def lastName = emp.personalData.lastName
+
+  def email = Some(s"$nick@thebigcompany.com")
+
+  def isMale: Option[Boolean] = Some(emp.personalData.isMale)
+
+  def birthDate = Some(emp.personalData.birth)
 }
 
-@fragment
-trait PersonPrivateV2_0Entity {
-
-  protected var personPrivate: PersonPrivateV2_0 = _
-
-  def privateData = personPrivate
-}
+//@fragment
+//trait PersonPrivateCommon {
+//  this: PersonPrivateV1_0Entity or PersonPrivateV2_0Entity =>
+//
+//  lazy val privateData: PersonPrivateData = {
+//    List(
+//      for (pp <- select[PersonPrivateV2_0Entity](this)) yield pp.privateData,
+//      for (pp <- select[PersonPrivateV1_0Entity](this)) yield pp.privateData
+//    ).find(_.isDefined).get.get
+//  }
+//
+//  def phone: Option[String] = privateData match {
+//    case PersonPrivateV1_0(phone, _, _, _) => phone
+//    case PersonPrivateV2_0(phone, _) => Some(phone)
+//  }
+//}
+//
+//@fragment
+//trait PersonPrivateV1_0Entity {
+//
+//  protected var personPrivateV1_0: PersonPrivateV1_0 = _
+//
+//  def privateData = personPrivateV1_0
+//}
+//
+//@fragment
+//trait PersonPrivateV2_0Entity {
+//
+//  protected var personPrivate: PersonPrivateV2_0 = _
+//
+//  def privateData = personPrivate
+//}
 
 @fragment
 trait PersonConnectionsEntity {
@@ -132,12 +152,6 @@ trait PersonConnectionsEntity {
   protected var connections: List[Connection] = Nil
 
   def allConnections = connections
-
-  def trustedOnly: List[Connection] = connections.filter(_.trusted)
-
-  def isTrusted(nick: String): Boolean = trustedOnly.exists(_.personNick == nick)
-
-  def removeConnection(nick: String): Unit = connections = connections.filterNot(_.personNick == this.nick)
 
 }
 
@@ -162,6 +176,14 @@ trait PersonAdStatsEntity {
   def addSeenAd(ad: AdCampaign): Unit = {
     seenAds ::= ad
   }
+}
+
+@fragment
+trait MarketingPersonaEntity {
+
+  protected var persona: MarketingPersona = null
+
+  def marketingPersona = persona
 }
 
 @dimension
@@ -216,11 +238,13 @@ trait NodeStats {
 // Morph Model
 object PersonModel {
 
-  type PersonType = PersonPublicCommon with (RegisteredUserEntity or EmployeeEntity) with
-    \?[PersonPrivateCommon with (PersonPrivateV2_0Entity or PersonPrivateV1_0Entity)] with
+  type PersonType =
+  ((RegisteredUserEntity with RegisteredUserPublicCommon) or (EmployeeEntity with EmployeePublicCommon)) with
+//    \?[PersonPrivateCommon with (PersonPrivateV2_0Entity or PersonPrivateV1_0Entity)] with
     \?[PersonConnectionsEntity] with
     \?[PersonJobsEntity] with
-    \?[PersonAdStatsEntity]
+    \?[PersonAdStatsEntity] with
+    \?[MarketingPersonaEntity]
   //with (Offline or Online) with NodeStats
 
 

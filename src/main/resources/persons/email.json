@@ -1,0 +1,15 @@
+{
+  "userId": "joe2@bigcompany.com",
+  "time": "2013-05-23T00:00:10Z",
+  "from": "joe2@bigcompany.com",
+  "to": ["joe3@bigcompany.com", "joe4@bigcompany.com"],
+  "subject": "Hello",
+  "message": "How are you? Regards, Joe",
+  "attachments": [
+    {
+      "id": 100049985,
+      "size": 134004,
+      "mime": "application/pdf"
+    }
+  ]
+}

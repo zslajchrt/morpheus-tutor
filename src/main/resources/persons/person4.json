@@ -3,7 +3,9 @@
     "nick": "joe4",
     "firstName": "Joe4",
     "lastName": "Doe4",
-    "email": "joe4@gmail.com"
+    "email": "joe4@gmail.com",
+    "male": true,
+    "birthDate": "1971-02-21T00:00:00Z"
   },
   "license": {
     "premium": true,

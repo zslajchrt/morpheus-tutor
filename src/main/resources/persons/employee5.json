@@ -7,7 +7,9 @@
         "firstName": "Joe1",
         "middleName": "D.",
         "lastName": "Doe1",
-        "title": "Mr."
+        "title": "Mr.",
+        "isMale": true,
+        "birth": "1971-02-21T00:00:00Z"
       }
     }
 }

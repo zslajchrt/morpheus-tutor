@@ -45,7 +45,7 @@ trait FragmentLoader[F] {
 
 @fragment
 trait RegisteredUserLoader extends FragmentLoader[RegisteredUserEntity] {
-  this: UserProtodata with RegisteredUserEntity =>
+  this: UserDatasources with RegisteredUserEntity =>
 
   override def load = {
     implicit val formats = DefaultFormats
@@ -59,41 +59,41 @@ trait RegisteredUserLoader extends FragmentLoader[RegisteredUserEntity] {
   }
 }
 
-@fragment
-trait JsonPersonPrivateLoaderV1_0 extends FragmentLoader[PersonPrivateV1_0Entity] {
-  this: UserProtodata with PersonPrivateV1_0Entity =>
-
-  override def load = {
-    implicit val formats = DefaultFormats
-    this.registeredUserJson.\("private").extractOpt[PersonPrivateV1_0] match {
-      case Some(privateDataV1_0) =>
-        this.personPrivateV1_0 = privateDataV1_0
-        success[PersonPrivateV1_0Entity]
-      case None => failure[PersonPrivateV1_0Entity]("invalid content")
-    }
-  }
-}
-
-@fragment
-trait JsonPersonPrivateLoaderV2_0 extends FragmentLoader[PersonPrivateV2_0Entity] {
-  this: UserProtodata with PersonPrivateV2_0Entity =>
-
-  override def load = {
-    implicit val formats = DefaultFormats
-    this.registeredUserJson.\("private").extractOpt[PersonPrivateV2_0] match {
-      case Some(privateData) =>
-        this.personPrivate = privateData
-        success[PersonPrivateV2_0Entity]
-
-      case None => failure[PersonPrivateV2_0Entity]("invalid content")
-
-    }
-  }
-}
+//@fragment
+//trait JsonPersonPrivateLoaderV1_0 extends FragmentLoader[PersonPrivateV1_0Entity] {
+//  this: UserDatasources with PersonPrivateV1_0Entity =>
+//
+//  override def load = {
+//    implicit val formats = DefaultFormats
+//    this.registeredUserJson.\("private").extractOpt[PersonPrivateV1_0] match {
+//      case Some(privateDataV1_0) =>
+//        this.personPrivateV1_0 = privateDataV1_0
+//        success[PersonPrivateV1_0Entity]
+//      case None => failure[PersonPrivateV1_0Entity]("invalid content")
+//    }
+//  }
+//}
+//
+//@fragment
+//trait JsonPersonPrivateLoaderV2_0 extends FragmentLoader[PersonPrivateV2_0Entity] {
+//  this: UserDatasources with PersonPrivateV2_0Entity =>
+//
+//  override def load = {
+//    implicit val formats = DefaultFormats
+//    this.registeredUserJson.\("private").extractOpt[PersonPrivateV2_0] match {
+//      case Some(privateData) =>
+//        this.personPrivate = privateData
+//        success[PersonPrivateV2_0Entity]
+//
+//      case None => failure[PersonPrivateV2_0Entity]("invalid content")
+//
+//    }
+//  }
+//}
 
 @fragment
 trait EmployeeLoader extends FragmentLoader[EmployeeEntity] {
-  this: UserProtodata with EmployeeEntity =>
+  this: UserDatasources with EmployeeEntity =>
 
   override def load = {
     implicit val formats = DefaultFormats
@@ -109,7 +109,7 @@ trait EmployeeLoader extends FragmentLoader[EmployeeEntity] {
 
 @fragment
 trait PersonConnectionsLoader extends FragmentLoader[PersonConnectionsEntity] {
-  this: UserProtodata with PersonConnectionsEntity =>
+  this: UserDatasources with PersonConnectionsEntity =>
 
   override def load = {
     implicit val formats = DefaultFormats
@@ -128,8 +128,24 @@ trait PersonConnectionsLoader extends FragmentLoader[PersonConnectionsEntity] {
 }
 
 @fragment
+trait MarketingPersonLoader extends FragmentLoader[MarketingPersonaEntity] {
+  this: UserDatasources with MarketingPersonaEntity =>
+
+  override def load = {
+    implicit val formats = DefaultFormats
+    this.registeredUserJson.extractOpt[MarketingPersona] match {
+      case Some(p) =>
+        this.persona = p
+        success[MarketingPersonaEntity]
+      case None =>
+        failure[MarketingPersonaEntity]("invalid content")
+    }
+  }
+}
+
+@fragment
 trait PersonJobsLoader extends FragmentLoader[PersonJobsEntity] {
-  this: UserProtodata with PersonJobsEntity =>
+  this: UserDatasources with PersonJobsEntity =>
 
   override def load = {
     implicit val formats = DefaultFormats
@@ -146,9 +162,10 @@ trait PersonJobsLoader extends FragmentLoader[PersonJobsEntity] {
   }
 }
 
+
 @fragment
 trait PersonAdStatsLoader extends FragmentLoader[PersonAdStatsEntity] {
-  this: UserProtodata with PersonAdStatsEntity =>
+  this: UserDatasources with PersonAdStatsEntity =>
 
   override def load = {
     implicit val formats = DefaultFormats
@@ -166,7 +183,7 @@ trait PersonAdStatsLoader extends FragmentLoader[PersonAdStatsEntity] {
 }
 
 @dimension
-trait UserProtodata {
+trait UserDatasources {
 
   def registeredUserJson: JValue
 
@@ -184,7 +201,7 @@ trait UserProtodata {
 }
 
 @fragment
-trait UserProtodataMock extends UserProtodata {
+trait UserDatasourcesMock extends UserDatasources {
 
   private[this] var userId: String = _
 
@@ -222,11 +239,11 @@ object JsonLoaders {
 
   type PersonLoaders = $[(RegisteredUserLoader or
     EmployeeLoader or
-    JsonPersonPrivateLoaderV1_0 or
-    JsonPersonPrivateLoaderV2_0 or
+//    JsonPersonPrivateLoaderV1_0 or
+//    JsonPersonPrivateLoaderV2_0 or
     PersonConnectionsLoader or
     PersonJobsLoader or
-    PersonAdStatsLoader) with UserProtodataMock]
+    PersonAdStatsLoader) with UserDatasourcesMock]
 
   //
   //  type PersonLoaders = $[JsonEmployeeLoader with UserProtodataMock]
@@ -236,8 +253,8 @@ object JsonLoaders {
     val loaderFactories = tupled(loaderFactoriesKernel)
     val plKernel = *(pl, loaderFactories)
     plKernel.!.initSources(userId)
-    val failedFragments = for (loader <- plKernel;
-                               loaderResult = loader.load
+    val failedFragments = for (loader <- plKernel if loader.isSuccess;
+                               loaderResult = loader.get.load
                                if !loaderResult.succeeded;
                                frag <- loaderResult.fragment) yield frag.index
 

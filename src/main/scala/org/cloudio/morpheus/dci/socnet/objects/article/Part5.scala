@@ -8,7 +8,7 @@ import org.morpheus._
 /**
  * Created by zslajchrt on 06/08/15.
  */
-object Part4 {
+object Part5 {
 
   def main(args: Array[String]) {
     val regUserOrEmpModel = parse[(RegisteredUserEntity with RegisteredUserPublicCommon) or (EmployeeEntity with EmployeePublicCommon)](true)
@@ -26,30 +26,38 @@ object Part4 {
                                  if !loaderResult.succeeded;
                                  frag <- loaderResult.fragment) yield frag.index).toSet)
 
-    val publicPerson = asMorphOf[PersonPublicCommon](regUserOrEmpKernel.~)
-    println(s"${publicPerson.nick}, ${publicPerson.firstName}, ${publicPerson.lastName}, ${publicPerson.email}")
-
-
     ////
     // Mail service
 
 
     {
-//      val mailRef: &[$[MailService]] = regUserOrEmpKernel
-//      val mailKernel = *(mailRef, single[MailServiceMock])
-//      val mailRef: &[$[MailService with FromHeaderValidator]] = regUserOrEmpKernel
-//      val mailKernel = *(mailRef, single[MailServiceMock], single[FromHeaderValidator])
-      val mailRef: &[$[MailService with FromHeaderValidator with /?[SignatureAppender]]] = regUserOrEmpKernel
-      // todo: describe the effect of \?[F] and /?[F] on choosing the winning alternative
-      val mailKernel = *(mailRef, single[MailServiceMock], single[FromHeaderValidator], single[SignatureAppender])
-      val alts0 = mailKernel.model.alternatives
+      val mailRef: &[$[MailService with
+        FromHeaderValidator with
+        /?[SignatureAppender] with
+        \?[AttachmentValidator]]] = regUserOrEmpKernel
 
-      val msg = Message(None, List("agata@gmail.com"), "Hello", "Bye", Nil)
-      val alternatives = mailKernel.~.alternatives
-      println(alternatives.toList)
-      println(alternatives.toMaskedList)
-      println(mailKernel.~.myAlternative)
-      mailKernel.~.send(msg)
+      val mailKernel = *(mailRef,
+        single[MailServiceMock],
+        single[FromHeaderValidator],
+        single[SignatureAppender],
+        single[AttachmentValidator])
+
+      object MailServiceStrategy {
+
+        def apply(msg: Message): MorphingStrategy[mailKernel.Model] = {
+          val hasAtt: Option[Int] = if (msg.attachments.nonEmpty) Some(0) else None
+          promote[AttachmentValidator](rootStrategy(mailKernel.model), hasAtt)
+        }
+      }
+
+      def sendMail(msg: Message): Unit = {
+        val m = mailKernel.~.remorph(MailServiceStrategy(msg))
+        println(m.myAlternative)
+        m.send(msg)
+      }
+
+      sendMail(Message(None, List("agata@gmail.com"), "Hello", "Bye", Nil))
+      sendMail(Message(None, List("agata@gmail.com"), "Hello", "Bye", List(Attachment("att1", Array[Byte](0,1,2), "mime1"))))
     }
 
   }

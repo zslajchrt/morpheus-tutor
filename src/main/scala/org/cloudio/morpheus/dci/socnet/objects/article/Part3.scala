@@ -15,13 +15,13 @@ object Part3 {
     val morphStrategy = MaskExplicitStrategy(rootStrategy(regUserOrEmpModel), true, () => failedFragments)
     val regUserOrEmpKernel = singleton(regUserOrEmpModel, morphStrategy)
 
-    val regUserOrEmpLoaderRef: &[$[(RegisteredUserLoader or EmployeeLoader) with UserProtodataMock]] = regUserOrEmpKernel
+    val regUserOrEmpLoaderRef: &[$[(RegisteredUserLoader or EmployeeLoader) with UserDatasourcesMock]] = regUserOrEmpKernel
     val regUserOrEmpLoaderKernel = *(regUserOrEmpLoaderRef, single[RegisteredUserLoader], single[EmployeeLoader],
-      single[UserProtodataMock])
+      single[UserDatasourcesMock])
     regUserOrEmpLoaderKernel.~.initSources("6")
 
     failedFragments = Some((for (loader <- regUserOrEmpLoaderKernel;
-                                 loaderResult = loader.load
+                                 loaderResult = loader.get.load
                                  if !loaderResult.succeeded;
                                  frag <- loaderResult.fragment) yield frag.index).toSet)
 

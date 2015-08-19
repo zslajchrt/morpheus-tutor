@@ -1,0 +1,18 @@
+{
+  "userId": "COOKIE-789987987439",
+  "time": "2013-05-23T00:00:10Z",
+  "keywords": [
+    {
+      "keyword": "beer",
+      "freq": 9
+    },
+    {
+      "keyword": "news",
+      "freq": 5
+    },
+    {
+      "keyword": "tv",
+      "freq": 1
+    }
+  ]
+}

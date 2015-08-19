@@ -1,13 +1,8 @@
 {
-  "userId": 2,
+  "userId": "joe2@bigcompany.com",
   "connections": [
     {
-      "personNick": "joe1",
-      "trusted": true
-    },
-    {
-      "personNick": "joe3",
-      "trusted": true
+      "userId": "joe1@bigcompany.com"
     }
   ]
 }

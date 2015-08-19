@@ -12,12 +12,12 @@ object Part2 {
 
   def main(args: Array[String]) {
     val regUserOrEmpKernel = singleton[RegisteredUserEntity or EmployeeEntity]
-    val regUserOrEmpLoaderRef: &[$[(RegisteredUserLoader or EmployeeLoader) with UserProtodataMock]] = regUserOrEmpKernel
+    val regUserOrEmpLoaderRef: &[$[(RegisteredUserLoader or EmployeeLoader) with UserDatasourcesMock]] = regUserOrEmpKernel
     val regUserOrEmpLoaderKernel = *(regUserOrEmpLoaderRef, single[RegisteredUserLoader], single[EmployeeLoader],
-      single[UserProtodataMock])
+      single[UserDatasourcesMock])
     regUserOrEmpLoaderKernel.~.initSources("5")
 
-    for (loader <- regUserOrEmpLoaderKernel) {
+    for (loaderAttempt <- regUserOrEmpLoaderKernel; loader <- loaderAttempt) {
       println(loader.myAlternative)
       loader.load
     }

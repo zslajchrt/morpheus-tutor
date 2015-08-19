@@ -1,0 +1,16 @@
+{
+  "demographics": {
+    "ageGroup": 1,
+    "gender": 0,
+    "salaryGroup": 4,
+    "location": 3,
+    "education": 1,
+    "family": true
+  },
+  "professional": {
+    "field": 133,
+    "position": 3,
+    "experience": 1
+  },
+  "hobbies": [94, 22, 1]
+}

@@ -13,10 +13,12 @@ object Part1 {
   def main(args: Array[String]) {
     val regUserKernel = singleton[RegisteredUserEntity]
     println(regUserKernel.~.registeredUser)
+    val empKernel = singleton[EmployeeEntity]
+    println(empKernel.~.employee)
 
     {
-      val regUserLoaderRef: &[$[RegisteredUserLoader with UserProtodataMock]] = regUserKernel
-      val regUserLoaderKernel = *(regUserLoaderRef, single[RegisteredUserLoader], single[UserProtodataMock])
+      val regUserLoaderRef: &[$[RegisteredUserLoader with UserDatasources]] = regUserKernel
+      val regUserLoaderKernel = *(regUserLoaderRef, single[RegisteredUserLoader], single[UserDatasourcesMock])
       regUserLoaderKernel.~.initSources("4")
       regUserLoaderKernel.~.load match {
         case Failure(_, reason) =>
@@ -30,7 +32,7 @@ object Part1 {
     //////
     {
       val empKernel = singleton[EmployeeEntity]
-      val empLoaderRef: &[$[EmployeeLoader with UserProtodataMock]] = empKernel
+      val empLoaderRef: &[$[EmployeeLoader with UserDatasourcesMock]] = empKernel
       // ...
     }
 
