@@ -11,9 +11,9 @@ import org.morpheus.Morpheus._
 trait EmployeeUserMail extends UserMail {
    this: Employee =>
 
-   abstract override def sendEmail(recipients: List[String], subject: String, message: String, attachments: List[Attachment]): Unit = {
+   abstract override def sendEmail(message: Email): Unit = {
      val dep = employeeData.department
      // ...
-     super.sendEmail(recipients, subject, message, attachments)
+     super.sendEmail(message)
    }
  }

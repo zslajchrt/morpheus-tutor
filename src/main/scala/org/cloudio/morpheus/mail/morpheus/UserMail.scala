@@ -10,5 +10,8 @@ import org.morpheus.Morpheus._
 @dimension
 trait UserMail {
 
-  def sendEmail(recipients: List[String], subject: String, message: String, attachments: List[Attachment])
+  def sendEmail(message: Email)
 }
+
+
+case class Email(recipients: List[String], subject: String, message: String, attachments: List[Attachment])

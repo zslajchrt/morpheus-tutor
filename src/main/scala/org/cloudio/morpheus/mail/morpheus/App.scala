@@ -1,7 +1,5 @@
 package org.cloudio.morpheus.mail.morpheus
 
-import java.util
-
 import org.cloudio.morpheus.mail.Attachment
 import org.morpheus._
 import org.morpheus.Morpheus._
@@ -12,47 +10,38 @@ import org.morpheus.Morpheus._
  */
 object App {
 
+  type MailMorphType = DefaultUserMail with
+    ((RegisteredUserAdapter with RegisteredUserMail) or (EmployeeAdapter with EmployeeUserMail)) with
+    \?[AttachmentValidator]
+  val mailMorphModel = parse[MailMorphType](false)
+
   def main(args: Array[String]): Unit = {
     val user = singleton[Employee or RegisteredUser]
-    println(user.!.myAlternative)
 
-    val userMail = initializeMailUser(user)
-    userMail.sendEmail(List("pepa@gmail.com"), "Hello", "Hi, Pepa!", List.empty[Attachment])
+    val userMail = initializeMailUser_1(user)
+    //val userMail = initializeMailUser_2(user)
+
+    val message = Email(List("pepa@gmail.com"), "Hello", "Hi, Pepa!", List.empty[Attachment])
+    userMail.remorph(MailMorphStrategy(message)).sendEmail(message)
   }
 
-  def initializeMailUser_1(user: &[Employee or RegisteredUser]): UserMail = {
-    null
+  def initializeMailUser_1(user: &[$[MailMorphType]]) = {
+
+    *(user, single[DefaultUserMail], single[RegisteredUserAdapter], single[RegisteredUserMail], single[EmployeeAdapter], single[EmployeeUserMail], single[AttachmentValidator]).!
+  }
+
+  def initializeMailUser_2(userRef: &![Employee or RegisteredUser]) = {
+    val userExtRef: &[$[MailMorphType]] = *(userRef)
+
+    *(userExtRef, single[DefaultUserMail], single[RegisteredUserAdapter], single[RegisteredUserMail], single[EmployeeAdapter], single[EmployeeUserMail], single[AttachmentValidator]).!
   }
 
 
-  def initializeMailUser(user: &[$[DefaultUserMail with
-    ((RegisteredUserAdapter with RegisteredUserMail) or
-      (EmployeeAdapter with EmployeeUserMail)) with \?[AttachmentValidator]]]): UserMail = {
-
-    val ret = *(user, single[DefaultUserMail], single[RegisteredUserAdapter], single[RegisteredUserMail], single[EmployeeAdapter], single[EmployeeUserMail], single[AttachmentValidator]).!
-    println(ret.myAlternative)
-    ret
-    //     user match {
-    //       case ru: RegisteredUser =>
-    //         val ruMail = new RegisteredUser() with
-    //           RegisteredUserAdapter with
-    //           DefaultUserMail with
-    //           RegisteredUserMail with
-    //           AttachmentValidator
-    //
-    //         ruMail.adoptState(ru)
-    //         ruMail
-    //
-    //       case emp: Employee =>
-    //         val empMail = new Employee() with
-    //           EmployeeAdapter with
-    //           DefaultUserMail with
-    //           EmployeeUserMail with
-    //           AttachmentValidator
-    //
-    //         empMail.adoptState(emp)
-    //         empMail
-    //     }
+  object MailMorphStrategy {
+    def apply(message: Email): MorphingStrategy[mailMorphModel.Model] = {
+      promote(rootStrategy(mailMorphModel), Some(0))
+    }
   }
-
 }
+
+

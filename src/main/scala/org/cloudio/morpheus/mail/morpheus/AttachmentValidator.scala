@@ -11,11 +11,11 @@ import org.morpheus.Morpheus._
 @dimension @wrapper
 trait AttachmentValidator extends UserMail {
 
-   abstract override def sendEmail(recipients: List[String], subject: String, message: String, attachments: List[Attachment]): Unit = {
-     for (att <- attachments) {
+   abstract override def sendEmail(message: Email): Unit = {
+     for (att <- message.attachments) {
        validateAttachment(att)
      }
-     super.sendEmail(recipients, subject, message, attachments)
+     super.sendEmail(message)
    }
 
    private def validateAttachment(att: Attachment): Unit = {

@@ -11,7 +11,7 @@ trait DefaultUserMail extends UserMail {
 
   this: MailOwner =>
 
-  override def sendEmail(recipients: List[String], subject: String, message: String, attachments: List[Attachment]): Unit = {
+  override def sendEmail(message: Email): Unit = {
     val fromHeader = email
     // todo:
   }
