@@ -1,0 +1,29 @@
+{
+  "id": 8488484,
+  "scanTime": "2013-05-23T00:00:00Z",
+  "scannerId": 78700,
+  "items": [
+    {
+      "id": 0,
+      "shape": "cylinder",
+      "material": "metal",
+      "x": 234.87,
+      "y": 133.4,
+      "z": 12.94,
+      "diameter": 13.45,
+      "height": 0.45,
+      "reflexivity": 0.8
+    },
+    {
+      "id": 1,
+      "shape": "rectangle",
+      "material": "paper",
+      "x": 673.87,
+      "y": 394.4,
+      "z": 132.93,
+      "width": 13.45,
+      "height": 8.21,
+      "reflexivity": 0.2
+    }
+  ]
+}
