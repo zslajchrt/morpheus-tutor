@@ -19,10 +19,8 @@ public class App {
             RegisteredUser registeredUser = new RegisteredUser();
             userMail = new RegisteredUserMail(registeredUser);
         }
-        // userMail's type reflects the type of the user
 
         userMail = new VirusDetector(userMail);
-        // Now, because of the delegation, userMail no longer reflects the type of the user
 
         Message msg = new Message();
         msg.setRecipients(Arrays.asList("pepa@gmail.com"));

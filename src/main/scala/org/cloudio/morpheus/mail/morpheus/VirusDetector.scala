@@ -9,9 +9,9 @@ import org.morpheus.Morpheus._
 @dimension @wrapper
 trait VirusDetector extends UserMail {
 
-  abstract override def sendEmail(message: Message): Unit = {
+  abstract override def validateEmail(message: Message): Unit = {
     validateAttachments(message)
-    super.sendEmail(message)
+    super.validateEmail(message)
   }
 
   private def validateAttachments(message: Message): Unit = {
@@ -28,8 +28,4 @@ trait VirusDetector extends UserMail {
     null
   }
 
-  abstract override def validateEmail(message: Message): Unit = {
-    validateAttachments(message)
-    super.validateEmail(message)
-  }
  }
