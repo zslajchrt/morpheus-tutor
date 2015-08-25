@@ -1,6 +1,5 @@
 package org.cloudio.morpheus.mail.morpheus
 
-import org.cloudio.morpheus.mail.Attachment
 import org.morpheus.fragment
 
 /**
@@ -11,8 +10,27 @@ trait DefaultUserMail extends UserMail {
 
   this: MailOwner =>
 
-  override def sendEmail(message: Email): Unit = {
-    val fromHeader = email
-    // todo:
+  override def sendEmail(message: Message): Unit = {
+    try {
+      validateEmail(message)
+      send(message)
+    }
+    catch {
+      case t: Throwable =>
+        store(message)
+        throw t
+    }
+  }
+
+  override def validateEmail(message: Message): Unit = {
+    // todo
+  }
+
+  private def send(message: Message): Unit = {
+    // todo
+  }
+
+  private def store(message: Message): Unit = {
+    // todo
   }
 }

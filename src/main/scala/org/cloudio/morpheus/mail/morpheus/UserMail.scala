@@ -1,6 +1,5 @@
 package org.cloudio.morpheus.mail.morpheus
 
-import org.cloudio.morpheus.mail.Attachment
 import org.morpheus._
 import org.morpheus.Morpheus._
 
@@ -10,8 +9,11 @@ import org.morpheus.Morpheus._
 @dimension
 trait UserMail {
 
-  def sendEmail(message: Email)
+  def sendEmail(message: Message)
+
+  def validateEmail(message: Message)
 }
 
+case class Attachment(name: String, data: Array[Byte], mime: String)
 
-case class Email(recipients: List[String], subject: String, message: String, attachments: List[Attachment])
+case class Message(recipients: List[String], subject: String, body: String, attachments: List[Attachment])

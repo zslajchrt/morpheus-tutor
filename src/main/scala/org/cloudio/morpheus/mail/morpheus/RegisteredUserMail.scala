@@ -13,11 +13,11 @@ import org.cloudio.morpheus.mail.Attachment
 trait RegisteredUserMail extends UserMail {
   this: RegisteredUser =>
 
-  abstract override def sendEmail(message: Email): Unit = {
-    val now: Date = new Date()
+  abstract override def validateEmail(message: Message) {
+    val now: Date = new Date
     if (regUserData.validTo.compareTo(now) < 0) {
-      throw new IllegalStateException("Expired account")
+      throw new IllegalArgumentException("User's account expired")
     }
-    super.sendEmail(message)
+    super.validateEmail(message)
   }
 }

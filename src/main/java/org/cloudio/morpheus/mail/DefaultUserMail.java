@@ -1,7 +1,5 @@
 package org.cloudio.morpheus.mail;
 
-import java.util.List;
-
 /**
  * Created by zslajchrt on 24/08/15.
  */
@@ -13,8 +11,24 @@ public class DefaultUserMail implements UserMail {
         this.mailOwner = mailOwner;
     }
 
-    public void sendEmail(List<String> recipients, String subject, String message, List<Attachment> attachments) {
-        String fromHeader = mailOwner.email();
+    public void sendEmail(Message message) {
+        try {
+            validateEmail(message);
+            send(message);
+        } catch (IllegalArgumentException e) {
+            store(message);
+        }
+    }
+
+    public void validateEmail(Message message) {
+        // todo
+    }
+
+    private void send(Message message) {
+        // todo
+    }
+
+    private void store(Message message) {
         // todo
     }
 

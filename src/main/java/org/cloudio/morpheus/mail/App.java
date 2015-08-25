@@ -9,19 +9,27 @@ public class App {
 
     public static void main(String[] args) {
 
-        RegisteredUser registeredUser = new RegisteredUser();
-        RegisteredUserAdapter mailUser = new RegisteredUserAdapter(registeredUser);
+        boolean isEmployee = true;
+        UserMail userMail;
 
-        UserMail userMail = new AttachmentValidator(
-                new EmployeeUserMail(
-                        new RegisteredUserMail(
-                                new DefaultUserMail(mailUser))));
+        if (isEmployee) {
+            Employee employee = new Employee();
+            userMail = new EmployeeUserMail(employee);
+        } else {
+            RegisteredUser registeredUser = new RegisteredUser();
+            userMail = new RegisteredUserMail(registeredUser);
+        }
+        // userMail's type reflects the type of the user
 
-        // "One-size fits all" way of assembling behavior
-        // AttachmentValidator is needed only if the list of attachments is not empty
-        // RegisteredUserMailService is needed only if the user is a registered user
-        // EmployeeMailService is needed only if the user is an employee
-        userMail.sendEmail(Arrays.asList("pepa@gmail.com"), "Hello", "Hi, Pepa!", Collections.<Attachment>emptyList());
+        userMail = new VirusDetector(userMail);
+        // Now, because of the delegation, userMail no longer reflects the type of the user
+
+        Message msg = new Message();
+        msg.setRecipients(Arrays.asList("pepa@gmail.com"));
+        msg.setSubject("Hello");
+        msg.setBody("Hi, Pepa!");
+
+        userMail.sendEmail(msg);
 
     }
 

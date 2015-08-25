@@ -1,9 +1,5 @@
 package org.cloudio.morpheus.mail.traditional
 
-import java.util
-import java.util.{Collections, Arrays}
-
-import org.cloudio.morpheus.mail.{Attachment, UserMail}
 
 
 /**
@@ -13,7 +9,7 @@ object App {
 
   def main(args: Array[String]): Unit = {
     val userMail = initializeMailUser(null)
-    userMail.sendEmail(util.Arrays.asList("pepa@gmail.com"), "Hello", "Hi, Pepa!", Collections.emptyList[Attachment])
+    userMail.sendEmail(Message(List("pepa@gmail.com"), "Hello", "Hi, Pepa!", Nil))
   }
 
   def initializeMailUser(user: Any): UserMail = {
@@ -23,7 +19,7 @@ object App {
           RegisteredUserAdapter with
           DefaultUserMail with
           RegisteredUserMail with
-          AttachmentValidator
+          VirusDetector
 
         ruMail.adoptState(ru)
         ruMail
@@ -33,7 +29,7 @@ object App {
           EmployeeAdapter with
           DefaultUserMail with
           EmployeeUserMail with
-          AttachmentValidator
+          VirusDetector
 
         empMail.adoptState(emp)
         empMail

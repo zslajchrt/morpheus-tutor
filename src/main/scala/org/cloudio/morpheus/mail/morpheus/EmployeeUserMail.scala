@@ -1,6 +1,5 @@
 package org.cloudio.morpheus.mail.morpheus
 
-import org.cloudio.morpheus.mail.Attachment
 import org.morpheus._
 import org.morpheus.Morpheus._
 
@@ -11,9 +10,9 @@ import org.morpheus.Morpheus._
 trait EmployeeUserMail extends UserMail {
    this: Employee =>
 
-   abstract override def sendEmail(message: Email): Unit = {
-     val dep = employeeData.department
-     // ...
-     super.sendEmail(message)
-   }
+  abstract override def sendEmail(message: Message): Unit = {
+    val signature: String = "\n\n" + employeeData.firstName + " " + employeeData.lastName + "\n" + employeeData.department
+
+    super.sendEmail(message.copy(body = message.body + signature))
+  }
  }
