@@ -17,6 +17,21 @@ public class RegisteredUser {
     private Date validFrom;
     private Date validTo;
 
+    public RegisteredUser() {
+    }
+
+    public RegisteredUser(RegisteredUser other) {
+        this.nick = other.nick;
+        this.firstName = other.firstName;
+        this.lastName = other.lastName;
+        this.email = other.email;
+        this.male = other.male;
+        this.birthDate = other.birthDate;
+        this.premium = other.premium;
+        this.validFrom = other.validFrom;
+        this.validTo = other.validTo;
+    }
+
     public String getNick() {
         return nick;
     }

@@ -5,38 +5,31 @@ import java.util.Date;
 /**
  * Created by zslajchrt on 24/08/15.
  */
-public class RegisteredUserAdapter implements MailOwner {
-    private final RegisteredUser regUser;
+public class RegisteredUserAdapter extends RegisteredUser implements MailOwner {
+    public RegisteredUserAdapter() {
+    }
 
-    public RegisteredUserAdapter(RegisteredUser regUser) {
-        this.regUser = regUser;
+    public RegisteredUserAdapter(RegisteredUser other) {
+        super(other);
     }
 
     public String nick() {
-        return regUser.getNick();
+        return getNick();
     }
 
     public String firstName() {
-        return regUser.getFirstName();
+        return getFirstName();
     }
 
     public String lastName() {
-        return regUser.getLastName();
+        return getLastName();
     }
 
     public String email() {
-        return regUser.getEmail();
-    }
-
-    public boolean isMale() {
-        return regUser.isMale();
+        return getEmail();
     }
 
     public Date birthDate() {
-        return regUser.getBirthDate();
-    }
-
-    public RegisteredUser getRegUser() {
-        return regUser;
+        return getBirthDate();
     }
 }

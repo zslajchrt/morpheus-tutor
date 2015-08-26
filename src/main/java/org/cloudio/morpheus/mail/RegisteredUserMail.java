@@ -8,13 +8,13 @@ import java.util.List;
  */
 public class RegisteredUserMail extends DefaultUserMail {
 
-    public RegisteredUserMail(RegisteredUser user) {
-        super(new RegisteredUserAdapter(user));
+    public RegisteredUserMail(RegisteredUserAdapter registeredUser) {
+        super(registeredUser);
     }
 
     @Override
     public void validateEmail(Message message) {
-        Date validTo = ((RegisteredUserAdapter) getMailOwner()).getRegUser().getValidTo();
+        Date validTo = ((RegisteredUserAdapter) getMailOwner()).getValidTo();
         Date now = new Date();
         if (validTo.compareTo(now) < 0) {
             throw new IllegalArgumentException("User's account expired");

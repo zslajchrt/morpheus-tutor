@@ -5,6 +5,10 @@ package org.cloudio.morpheus.mail.traditional
  */
 trait VirusDetector extends UserMail {
 
+  private var virusCounter: Int = 0
+
+  def virusesFound = virusCounter
+
   abstract override def validateEmail(message: Message): Unit = {
     validateAttachments(message)
     super.validateEmail(message)
@@ -14,6 +18,7 @@ trait VirusDetector extends UserMail {
     for (attachment <- message.attachments) {
       val result: String = scanAttachment(attachment)
       if (result != null) {
+        virusCounter += 1
         throw new IllegalArgumentException("Virus found in attachment " + attachment + "\nDescription: " + result)
       }
     }

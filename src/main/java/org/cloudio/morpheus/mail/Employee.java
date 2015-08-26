@@ -18,6 +18,21 @@ public class Employee {
     private String position;
     private String department;
 
+    public Employee() {
+    }
+
+    public Employee(Employee other) {
+        this.firstName = other.firstName;
+        this.middleName = other.middleName;
+        this.lastName = other.lastName;
+        this.title = other.title;
+        this.isMale = other.isMale;
+        this.birth = other.birth;
+        this.employeeCode = other.employeeCode;
+        this.position = other.position;
+        this.department = other.department;
+    }
+
     public String getFirstName() {
         return firstName;
     }
