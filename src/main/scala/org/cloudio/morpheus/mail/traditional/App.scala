@@ -22,7 +22,7 @@ object App {
     empMail.adoptState(employee)
 
     val ruMail = if (registeredUser.premium)
-      new RegisteredUser() with
+      new RegisteredUser() with PremiumUser with
         RegisteredUserAdapter with
         DefaultUserMail with
         RegisteredUserMail with

@@ -3,7 +3,7 @@ package org.cloudio.morpheus.mail;
 /**
  * Created by zslajchrt on 24/08/15.
  */
-public class DefaultUserMail implements UserMail {
+abstract class DefaultUserMail implements UserMail {
 
     private final MailOwner mailOwner;
 

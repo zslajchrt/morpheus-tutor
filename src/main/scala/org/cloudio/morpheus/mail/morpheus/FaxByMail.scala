@@ -13,7 +13,7 @@ trait FaxByMail {
 
 @fragment
 trait DefaultFaxByMail extends FaxByMail {
-  this: MailOwner =>
+  this: PremiumUser =>
 
   override def faxEmail(message: Message): Unit = {
     // todo

@@ -1,7 +1,5 @@
 package org.cloudio.morpheus.mail.traditional
 
-import org.cloudio.morpheus.mail.MailOwner
-
 /**
  * Created by zslajchrt on 26/08/15.
  */
@@ -10,7 +8,7 @@ trait FaxByMail {
 }
 
 trait DefaultFaxByMail extends FaxByMail {
-  this: MailOwner =>
+  this: PremiumUser =>
 
   override def faxEmail(message: Message): Unit = {
     // todo

@@ -17,7 +17,7 @@ object App {
 
 
   def main(args: Array[String]): Unit = {
-    val user = singleton[Employee or RegisteredUser]
+    val user = singleton[Employee or (RegisteredUser with \?[PremiumUser])]
     val userMailRef: &[$[MailMorphType]] = user
     val userMail = *(userMailRef, single[DefaultUserMail], single[RegisteredUserAdapter], single[RegisteredUserMail], single[EmployeeAdapter], single[EmployeeUserMail], single[DefaultFaxByMail])
     val userMailAVRef: &[UserMail with \?[$[VirusDetector]]] = userMail
