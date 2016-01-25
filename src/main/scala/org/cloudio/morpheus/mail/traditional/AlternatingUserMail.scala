@@ -4,9 +4,7 @@ package org.cloudio.morpheus.mail.traditional
 /**
  * Created by zslajchrt on 26/08/15.
  */
-class AlternatingUserMail(userMail1: UserMail, userMail2: UserMail) extends UserMail {
-
-  private var left: Boolean = true
+abstract class AlternatingUserMail extends UserMail {
 
   override def sendEmail(message: Message) {
     getDelegate.sendEmail(message)
@@ -16,13 +14,9 @@ class AlternatingUserMail(userMail1: UserMail, userMail2: UserMail) extends User
     getDelegate.validateEmail(message)
   }
 
-  def setCurrent(left: Boolean) {
-    this.left = left
-  }
+  protected def getDelegate: UserMail
 
-  private def getDelegate: UserMail = if (left) userMail1 else userMail2
-
-  def canFaxEmail(message: Message): Boolean = getDelegate.isInstanceOf[FaxByMail]
+  def canFaxEmail: Boolean = getDelegate.isInstanceOf[FaxByMail]
 
   def faxEmail(message: Message) {
     getDelegate match {

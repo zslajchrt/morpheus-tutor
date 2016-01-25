@@ -15,7 +15,6 @@ object App {
   //type MailMorphType = DefaultUserMail with ((RegisteredUserAdapter with RegisteredUserMail) or (EmployeeAdapter with EmployeeUserMail)) with /?[VirusDetector]
   val mailMorphModel = parse[MailMorphType](false)
 
-
   def main(args: Array[String]): Unit = {
     val user = singleton[Employee or (RegisteredUser with \?[PremiumUser])]
     val userMailRef: &[$[MailMorphType]] = user
@@ -24,7 +23,6 @@ object App {
     val userMailAV = *(userMailAVRef, single[VirusDetector])
 
     val message = Message(List("pepa@gmail.com"), "Hello", "Hi, Pepa!", List.empty[Attachment])
-
     val avRef: &[UserMail with VirusDetector] = userMailAV
     //val av = *(avRef).make
     val avKern = *(avRef)

@@ -3,24 +3,9 @@ package org.cloudio.morpheus.mail;
 /**
  * Created by zslajchrt on 26/08/15.
  */
-public class AlternatingUserMail implements UserMail, FaxByMail {
+public abstract class AlternatingUserMail implements UserMail, FaxByMail {
 
-    private final UserMail userMail1;
-    private final UserMail userMail2;
-    private boolean left = true;
-
-    public AlternatingUserMail(UserMail userMail1, UserMail userMail2) {
-        this.userMail1 = userMail1;
-        this.userMail2 = userMail2;
-    }
-
-    public void setCurrent(boolean left) {
-        this.left = left;
-    }
-
-    private UserMail getDelegate() {
-        return left ? userMail1 : userMail2;
-    }
+    protected abstract UserMail getDelegate();
 
     public void sendEmail(Message message) {
         getDelegate().sendEmail(message);
@@ -30,13 +15,14 @@ public class AlternatingUserMail implements UserMail, FaxByMail {
         getDelegate().validateEmail(message);
     }
 
-    public boolean canFaxEmail(Message message) {
+    public boolean canFaxEmail() {
         return getDelegate() instanceof FaxByMail;
     }
 
     public void faxEmail(Message message) {
-        if (getDelegate() instanceof FaxByMail) {
-            ((FaxByMail) getDelegate()).faxEmail(message);
+        UserMail delegate = getDelegate();
+        if (delegate instanceof FaxByMail) {
+            ((FaxByMail) delegate).faxEmail(message);
         } else {
             throw new IllegalStateException("The current service does not support fax");
         }

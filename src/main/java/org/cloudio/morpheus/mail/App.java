@@ -7,43 +7,79 @@ import java.util.*;
  */
 public class App {
 
-    public static void main(String[] args) {
+    public static void useMailService(Map<String, Object> employeeData, Map<String, Object> regUserData) {
 
-        Employee employee = new Employee();
-        RegisteredUser registeredUser = new RegisteredUser();
+        Employee employee = initEmployee(employeeData);
+        RegisteredUser registeredUser = initRegisteredUser(regUserData);
 
-        // We need to clone the state of both employee and registeredUser
-        EmployeeAdapter employeeAdapter = new EmployeeAdapter(employee);
-        UserMail userMail1 = new EmployeeUserMail(employeeAdapter);
-
-        RegisteredUserAdapter registeredUserAdapter = new RegisteredUserAdapter(registeredUser);
-        UserMail userMail2 = new RegisteredUserMail(registeredUserAdapter);
-
-        userMail1 = new VirusDetector(userMail1);
-        userMail2 = new VirusDetector(userMail2);
-
-        if (registeredUser.isPremium()) {
-            userMail2 = new DefaultFaxByMail(registeredUserAdapter, userMail2);
-        }
-
-        // The type of account is still discoverable from the type of both userMail1 and userMail2
-
-        AlternatingUserMail userMail = new AlternatingUserMail(userMail1, userMail2);
-
-        // The client must be fixed to AlternatingUserMail through which it can determine whether the service supports fax.
+        // The client must use the concrete type AlternatingUserMail through
+        // which the client can determine whether the service supports fax or not.
+        AlternatingUserMail userMail = initMailService(employee, registeredUser);
 
         Message msg = new Message();
-        msg.setRecipients(Arrays.asList("pepa@gmail.com"));
+        msg.setRecipients(Collections.singletonList("pepa@gmail.com"));
         msg.setSubject("Hello");
         msg.setBody("Hi, Pepa!");
 
         userMail.sendEmail(msg);
+        if (userMail.canFaxEmail()) {
+            userMail.faxEmail(msg);
+        }
+    }
 
-        userMail.setCurrent(false);
+    public static Employee initEmployee(Map<String, Object> employeeData) {
+        Employee employee = new Employee();
+        employee.load(employeeData);
+        return employee;
+    }
 
-        userMail.sendEmail(msg);
+    public static RegisteredUser initRegisteredUser(Map<String, Object> regUserData) {
+        RegisteredUser registeredUser;
+        if (Boolean.TRUE.equals(regUserData.get("isPremium"))) {
+            class Premium extends RegisteredUser implements PremiumUser {}
+            registeredUser = new Premium();
+        } else {
+            registeredUser = new RegisteredUser();
+        }
+        registeredUser.load(regUserData);
 
+        return registeredUser;
+    }
 
+    public static AlternatingUserMail initMailService(final Employee employee, final RegisteredUser regUser) {
+
+        EmployeeAdapter employeeAdapter = new EmployeeAdapter(employee);
+        final UserMail employeeMail = new VirusDetector(new EmployeeUserMail(employeeAdapter));
+
+        final RegisteredUserAdapter registeredUserAdapter = new RegisteredUserAdapter(regUser);
+        final UserMail regUserMail = new VirusDetector(new RegisteredUserMail(registeredUserAdapter));
+        final UserMail regUserMailPremium = new DefaultFaxByMail(registeredUserAdapter, regUserMail);
+
+        return new AlternatingUserMail() {
+            @Override
+            protected UserMail getDelegate() {
+                Calendar c = Calendar.getInstance();
+                int h = c.get(Calendar.HOUR_OF_DAY);
+                if (!(h >= 8 && h < 17)) {
+                    return getEmployeeMail();
+                } else {
+                    return getRegUserMail();
+                }
+            }
+
+            UserMail getEmployeeMail() {
+                return employeeMail;
+            }
+
+            UserMail getRegUserMail() {
+                if (regUser.isPremium() &&
+                        regUser.getValidTo() != null &&
+                        regUser.getValidTo().compareTo(Calendar.getInstance().getTime()) >= 0)
+                    return regUserMailPremium;
+                else
+                    return regUserMail;
+            }
+        };
     }
 
 }

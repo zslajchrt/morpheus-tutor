@@ -1,6 +1,7 @@
 package org.cloudio.morpheus.mail;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by zslajchrt on 24/08/15.
@@ -103,4 +104,9 @@ public class RegisteredUser {
     public void setValidTo(Date validTo) {
         this.validTo = validTo;
     }
+
+    public void load(Map<String, Object> data) {
+        // todo
+    }
+
 }

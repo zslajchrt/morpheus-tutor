@@ -1,6 +1,7 @@
 package org.cloudio.morpheus.mail;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by zslajchrt on 24/08/15.
@@ -103,5 +104,9 @@ public class Employee {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public void load(Map<String, Object> data) {
+        // todo
     }
 }
