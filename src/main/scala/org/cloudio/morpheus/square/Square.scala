@@ -22,6 +22,10 @@ trait Shape {
   def area: Double
 
   def move(dx: Double, dy: Double): Unit
+
+  def shapeName: String
+
+  def printShape(): Unit
 }
 
 class ShapePainter(gc: Graphics) extends ShapeVisitor {
@@ -56,6 +60,12 @@ trait Rectangle extends Shape {
     x += dx
     y += dy
   }
+
+  def printShape(): Unit = {
+    println(s"""$shapeName($x,$y,$width,$height)""")
+  }
+
+  override def shapeName: String = "Rectangle"
 }
 
 @fragment
@@ -77,6 +87,8 @@ trait SquareW extends Rectangle {
   override def accept(sv: ShapeVisitor): Unit = {
     sv.visitSquare(this)
   }
+
+  override def shapeName: String = "Square"
 }
 
 @fragment
@@ -143,7 +155,7 @@ trait Segment {
 
 object App {
 
-  def main(args: Array[String]) {
+  def main0(args: Array[String]) {
     val out = new PrintWriter("drawing2.svg")
     val g = new SVGGraphics(out)
     g.start()
@@ -182,6 +194,13 @@ object App {
     sq.height = 50
     rect.remorph
     rect.accept(painter)
+
+    try {
+      sq.width = 100
+    } catch {
+      case e: StaleMorphException =>
+        println("No longer square")
+    }
 
     g.end()
     out.close()
@@ -479,89 +498,54 @@ object App {
         printShape(shape)
     }
 
-    //
-    //    var savedSide = select[Segment](rect) match {
-    //      case Some(seg) => seg.length
-    //      case None => sys.error("Unexpected")
-    //    }
-    //
-    //    val rectRef: &?[$[Ellipse] with (Unit | Segment | $[Circle])] = rect
-    //
-    //    val (ellipseModel, ellipseDefStg) = unveil(rectRef)
-    //
-    //    def ellipseStg(initShape: Int) = {
-    //      val stg = maskFull[Unit | Segment | Circle](ellipseModel)(ellipseDefStg, {
-    //        case None => Some(initShape)
-    //        case Some(ellipse) if ellipse.axisX == 0 || ellipse.axisX == 0 => Some(1)
-    //        case Some(ellipse) if ellipse.axisX == ellipse.axisY => Some(2)
-    //        case _ => Some(0)
-    //      })
-    //      strict(stg)
-    //    }
-    //
-    //    val ellipseRkg = *(rectRef, ellipseStg(1), single[Ellipse], single[Circle])
-    //
-    //    val ellipse = ellipseRkg.~
-    //
-    //    select[Segment](ellipse) match {
-    //      case Some(seg) => seg.length = savedSide
-    //      case None => sys.error("Unexpected")
-    //    }
-    //
-    //    // do not present in the paper
-    //    def printEllipse(el: ellipseModel.MutableLUB): Unit = {
-    //      select[Segment](el) match {
-    //        case Some(seg) => print(s"Segment(${seg.length}):")
-    //        case None =>
-    //          select[Circle](el) match {
-    //            case Some(cir) => print(s"Circle(${cir.radius}):")
-    //            case None =>
-    //          }
-    //      }
-    //      println(s"Ellipse(${el.axisX},${el.axisY})")
-    //    }
-    //
-    //    printEllipse(ellipse)
-    //
-    //    ellipse.axisX = 20f
-    //    ellipse.remorph
-    //    printEllipse(ellipse)
-    //
-    //    ellipse.axisY = 20f
-    //    ellipse.remorph
-    //    printEllipse(ellipse)
-    //
-    //    ellipse.axisX = 0f
-    //    ellipse.remorph
-    //    printEllipse(ellipse)
-    //
-    //    savedSide = select[Segment](ellipse) match {
-    //      case Some(seg) => seg.length
-    //      case None => sys.error("Unexpected")
-    //    }
-    //
-    //    val ellipseRef: &?[$[Rectangle] * (Unit | $[Square] | Segment)] = ellipse
-    //
-    //    val rect2Kernel = *(ellipseRef, rectStg(2), single[Rectangle], single[Square])
-    //    val rect2 = rect2Kernel.~
-    //
-    //    select[Segment](rect2) match {
-    //      case Some(seg) => seg.length = savedSide
-    //      case None => sys.error("Unexpected")
-    //    }
-    //
-    //    printShape(rect2)
-    //
-    //    rect2.width = 10f
-    //    rect2.height = 10f
-    //    rect2.remorph
-    //
-    //    printShape(rect2)
-    //
-    //    rect2.height = 30f
-    //    rect2.remorph
-    //
-    //    printShape(rect2)
+  }
+
+
+  def main4(args: Array[String]): Unit = {
+    val rect = new Rectangle with Square with SquareW {}
+    rect.printShape()
+
+    rect.width = 200
+    rect.printShape()
+  }
+
+  def main(args: Array[String]) {
+    val rectModel = parse[Rectangle with (Unit | (Square with SquareW))](false)
+
+    val rectStg = promote[Square](rectModel)({
+      case None => Some(0)
+      case Some(rect) if rect.width == rect.height => Some(0)
+      case _ => None
+    })
+
+    val rectRkg = singleton(rectModel, rectStg)
+    val rect = rectRkg.~
+
+    rect.printShape()
+
+    rect.width = 200
+    rect.remorph
+    rect.printShape()
+
+    // make the square
+    rect.height = 200
+    rect.remorph
+    val sq: Square with Rectangle = select[Square with Rectangle](rect).get
+    sq.side = 80
+    rect.printShape
+
+    sq.height = 50
+    rect.remorph
+    rect.printShape
+
+    try {
+      sq.width = 100
+    } catch {
+      case e: StaleMorphException =>
+        println("No longer square")
+    }
+
+    rect.printShape
   }
 
 }
