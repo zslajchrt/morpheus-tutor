@@ -12,62 +12,35 @@ import org.morpheus.dci.DCI._
 
 @fragment
 trait Source {
-  this: Account with Context =>
+  this: Account =>
 
   private def withdraw(amount: BigDecimal) {
     decreaseBalance(amount)
   }
 
-  def transfer {
-    Console.println("Source balance is: " + Balance)
-    Console.println("Destination balance is: " + Destination.Balance)
-
-    Destination.deposit(Amount)
-    withdraw(Amount)
-
-    Console.println("Source balance is now: " + Balance)
-    Console.println("Destination balance is now: " + Destination.Balance)
+  def transfer(destination: Destination with Account, amount: BigDecimal): Unit = {
+    destination.deposit(amount)
+    withdraw(amount)
   }
 
 }
 
 @fragment
 trait Destination {
-  this: Account with Context =>
+  this: Account =>
 
-  def deposit(amount: BigDecimal) {
+  def deposit(amount: BigDecimal): Unit = {
     increaseBalance(amount)
   }
 }
 
-trait Context {
-  private[moneyTransfer] val Source: Account with Source
-  private[moneyTransfer] val Destination: Account with Destination
-  // Amount is both a role and stage prop
-  val Amount: BigDecimal
-}
+class Context(srcAcc: &[$[Source] with Account], dstAcc: &[$[Destination] with Account], val amount: BigDecimal) {
 
-class ContextImpl(srcAcc: Account, dstAcc: Account, val Amount: BigDecimal) extends Context {
-
-//  private[moneyTransfer] val Source = role[Source, Account, Context](srcAcc)
-  // The role macro just unfolds in the following code
-  private[moneyTransfer] val Source = {
-    implicit val dataFrag = external[Account](srcAcc)
-    implicit val selfFrag = external[Context](this)
-    singleton[Account with Source with Context].!
-  }
-
-  private[moneyTransfer] val Destination = {
-    implicit val dataFrag = external[Account](dstAcc)
-    implicit val selfFrag = external[Context](this)
-    singleton[Account with Destination with Context].!
-  }
-
-//  private[moneyTransfer] val Destination = role[Destination, Account, Context](dstAcc)
-
+  val source = *(srcAcc)
+  val destination = *(dstAcc)
 
   def trans(): Unit = {
-    Source.transfer
+    source.!.transfer(destination.!, amount)
   }
 
 }
@@ -75,8 +48,24 @@ class ContextImpl(srcAcc: Account, dstAcc: Account, val Amount: BigDecimal) exte
 object App {
 
   def main(args: Array[String]): Unit = {
-    val ctx = new ContextImpl(new AccountBase(10), new AccountBase(50), 5)
+    val savingsAcc = {
+      implicit val accBaseFactory = single[AccountBase, AccountInit](AccountInitData(10))
+      singleton[AccountBase with SavingsAccount].!
+    }
+
+    val checkingAcc = {
+      implicit val accBaseFactory = single[AccountBase, AccountInit](AccountInitData(50))
+      singleton[AccountBase with CheckingAccount].!
+    }
+
+    println(s"Source balance is: ${savingsAcc.balance}")
+    println(s"Destination balance is: ${checkingAcc.balance}")
+
+    val ctx = new Context(savingsAcc, checkingAcc, 5)
     ctx.trans()
+
+    println(s"Source balance is now: ${savingsAcc.balance}")
+    println(s"Destination balance is now: ${checkingAcc.balance}")
   }
 
 }

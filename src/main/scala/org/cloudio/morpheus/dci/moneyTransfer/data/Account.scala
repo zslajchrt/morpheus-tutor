@@ -1,5 +1,6 @@
 package org.cloudio.morpheus.dci.moneyTransfer.data
 
+import org.morpheus.Morpheus.dlg
 import org.morpheus._
 
 /**
@@ -7,12 +8,9 @@ import org.morpheus._
  */
 
 
-//case class AccountInit(initialBalance: BigDecimal) extends AccountData {
-//  override var balance: BigDecimal = initialBalance
-//}
-
+@dimension
 trait Account {
-  def Balance: BigDecimal
+  def balance: BigDecimal
 
   def decreaseBalance(amount: BigDecimal): Unit
 
@@ -20,25 +18,37 @@ trait Account {
 }
 
 
-class AccountBase(initialBalance: BigDecimal) extends Account {
-
-  private var balance: BigDecimal = initialBalance
-
-  def Balance = balance
-
-  def decreaseBalance(amount: BigDecimal) = balance -= amount
-
-  def increaseBalance(amount: BigDecimal) = balance += amount
+trait AccountInit {
+  val initialBalance: BigDecimal
 }
 
-class SavingsAccount(initialBalance: BigDecimal) extends AccountBase(initialBalance) {
+case class AccountInitData(initialBalance: BigDecimal) extends AccountInit
 
+@fragment
+trait AccountBase extends Account with dlg[AccountInit] {
+
+  private var bal: BigDecimal = initialBalance
+
+  def balance = bal
+
+  def decreaseBalance(amount: BigDecimal) = bal -= amount
+
+  def increaseBalance(amount: BigDecimal) = bal += amount
 }
 
-class CheckingAccount(initialBalance: BigDecimal) extends AccountBase(initialBalance) {
+// various accounts
 
+@fragment
+trait SavingsAccount {
+  this: AccountBase =>
 }
 
-class RetiringAccount(initialBalance: BigDecimal) extends AccountBase(initialBalance) {
+@fragment
+trait CheckingAccount {
+  this: AccountBase =>
+}
 
+@fragment
+trait RetiringAccount {
+  this: AccountBase =>
 }
