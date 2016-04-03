@@ -18,9 +18,20 @@ trait Source {
     decreaseBalance(amount)
   }
 
-  def transfer(destination: Destination with Account, amount: BigDecimal): Unit = {
+  def transfer(destination: Destination, amount: BigDecimal): Unit = {
     destination.deposit(amount)
     withdraw(amount)
+  }
+
+}
+
+@fragment @wrapper
+trait BlockedSource extends Source {
+  this: Account with BlockedAccount =>
+
+  override def transfer(destination: Destination, amount: BigDecimal): Unit = {
+    println("Warning: No transfer. Account blocked.")
+    destination.deposit(0)
   }
 
 }
@@ -34,13 +45,16 @@ trait Destination {
   }
 }
 
-class Context(srcAcc: &[$[Source] with Account], dstAcc: &[$[Destination] with Account], val amount: BigDecimal) {
+class Context(srcAcc: &[$[Source] with Account with /?[$[BlockedSource] with BlockedAccount]],
+              dstAcc: &[$[Destination] with Account], val amount: BigDecimal) {
 
-  val source = *(srcAcc)
-  val destination = *(dstAcc)
+  val source = *(srcAcc).~
+  val destination = *(dstAcc).~
 
   def trans(): Unit = {
-    source.!.transfer(destination.!, amount)
+    println("Source:" + source.myAlternative)
+    println("Destination:" + destination.myAlternative)
+    source.transfer(destination, amount)
   }
 
 }
@@ -49,19 +63,36 @@ object App {
 
   def main(args: Array[String]): Unit = {
     val savingsAcc = {
-      implicit val accBaseFactory = single[AccountBase, AccountInit](AccountInitData(10))
-      singleton[AccountBase with SavingsAccount].!
+      val model = parse[AccountBase with /?[BlockedAccount] with SavingsAccount](true)
+      val strat = unmaskFull[BlockedAccount](model)(rootStrategy(model), {
+        case Some(m) if m.balance > 0 => Some(0)
+        case _ => None
+      })
+      singleton(model, strat).~
     }
+    savingsAcc.increaseBalance(10)
+    savingsAcc.remorph
+    println(savingsAcc.myAlternative)
 
     val checkingAcc = {
-      implicit val accBaseFactory = single[AccountBase, AccountInit](AccountInitData(50))
-      singleton[AccountBase with CheckingAccount].!
+      singleton[AccountBase with /?[BlockedAccount] with CheckingAccount].~.remorph
     }
+
+    checkingAcc.increaseBalance(50)
 
     println(s"Source balance is: ${savingsAcc.balance}")
     println(s"Destination balance is: ${checkingAcc.balance}")
 
-    val ctx = new Context(savingsAcc, checkingAcc, 5)
+    var ctx = new Context(savingsAcc, checkingAcc, 12)
+    ctx.trans()
+
+    println(s"Source balance is now: ${savingsAcc.balance}")
+    println(s"Destination balance is now: ${checkingAcc.balance}")
+
+    savingsAcc.remorph
+    println(savingsAcc.myAlternative)
+
+    ctx = new Context(savingsAcc, checkingAcc, 12)
     ctx.trans()
 
     println(s"Source balance is now: ${savingsAcc.balance}")

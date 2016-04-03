@@ -75,6 +75,7 @@ trait Square {
   def side = width
 
   def side_=(s: Double): Unit = {
+    assert(width == height)
     this.width = s
     this.height = s
   }
@@ -502,15 +503,17 @@ object App {
 
 
   def main4(args: Array[String]): Unit = {
-    val rect = new Rectangle with Square with SquareW {}
-    rect.printShape()
+    val square = new Rectangle with Square with SquareW {}
+    square.printShape()
 
-    rect.width = 200
-    rect.printShape()
+    square.width = 200
+    square.printShape()
+
+    square.side = 300
   }
 
   def main(args: Array[String]) {
-    val rectModel = parse[Rectangle with (Unit | (Square with SquareW))](false)
+    val rectModel = parse[Rectangle with \?[(Square with SquareW)]](false)
 
     val rectStg = promote[Square](rectModel)({
       case None => Some(0)
@@ -519,7 +522,7 @@ object App {
     })
 
     val rectRkg = singleton(rectModel, rectStg)
-    val rect = rectRkg.~
+    val rect = rectRkg.make_~
 
     rect.printShape()
 
@@ -530,13 +533,13 @@ object App {
     // make the square
     rect.height = 200
     rect.remorph
-    val sq: Square with Rectangle = select[Square with Rectangle](rect).get
+    val sq: Square with SquareW = select[Square with SquareW](rect).get
     sq.side = 80
     rect.printShape
 
     sq.height = 50
     rect.remorph
-    rect.printShape
+    sq.printShape
 
     try {
       sq.width = 100

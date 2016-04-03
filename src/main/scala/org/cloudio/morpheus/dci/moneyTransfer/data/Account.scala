@@ -18,22 +18,25 @@ trait Account {
 }
 
 
-trait AccountInit {
-  val initialBalance: BigDecimal
-}
-
-case class AccountInitData(initialBalance: BigDecimal) extends AccountInit
-
 @fragment
-trait AccountBase extends Account with dlg[AccountInit] {
+trait AccountBase extends Account {
 
-  private var bal: BigDecimal = initialBalance
+  private var bal: BigDecimal = 0
 
   def balance = bal
 
   def decreaseBalance(amount: BigDecimal) = bal -= amount
 
   def increaseBalance(amount: BigDecimal) = bal += amount
+}
+
+@dimension @wrapper
+trait BlockedAccount extends Account {
+
+  override def decreaseBalance(amount: BigDecimal): Unit = {
+    sys.error("Blocked")
+  }
+
 }
 
 // various accounts
