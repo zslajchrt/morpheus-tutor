@@ -88,7 +88,7 @@ trait Employee {
 
 trait OrganizationData {
   val organizationId: Long
-  var name: String
+  var organizationName: String
 }
 
 @fragment
@@ -96,8 +96,8 @@ trait Organization extends dlg[OrganizationData] {
 
 }
 
-case class OrganizationDataArgs(val organizationId: Long, nm: String) extends OrganizationData {
-  override var name: String = nm
+case class OrganizationDataParams(val organizationId: Long, nm: String) extends OrganizationData {
+  override var organizationName: String = nm
 }
 
 @fragment
@@ -152,14 +152,15 @@ object App {
   var payrolls: Map[Long, List[Payroll]] = Map.empty
 
   def createOrganization(orgId: Long, name: String) = {
-    implicit val orgFact = single[Organization, OrganizationData](OrganizationDataArgs(orgId, name))
+    implicit val orgFact = single[Organization, OrganizationData](OrganizationDataParams(orgId, name))
     singleton(organizationModel, rootStrategy(organizationModel))
   }
 
   def createPerson(personId: Long, firstName: String, lastName: String, birthDate: String, woman: Boolean) = {
 
-    implicit val personFact = single[Person, PersonalData](PersonalDataParams(personId, firstName, lastName, dateFormat.parse(birthDate)))
-    var stg: MorphingStrategy[personModel.Model] = maskAll(rootStrategy(personModel))
+    var stg: MorphingStrategy[personModel.Model] = rootStrategy(personModel)
+
+    stg = maskAll(stg)
 
     stg = mask[Woman | Man](stg, () => if (woman) Some(0) else Some(1))
 
@@ -180,6 +181,7 @@ object App {
       case _ => None
     })
 
+    implicit val personFact = single[Person, PersonalData](PersonalDataParams(personId, firstName, lastName, dateFormat.parse(birthDate)))
     val rec = singleton(personModel, stg)
     rec.~.remorph // now the strategies will get the person reference
     rec
